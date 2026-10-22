@@ -67,10 +67,15 @@ Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(唯讀,一次只�
 
 ## 安裝
 
+先把這個 repo clone 到本機,再把 clone 下來的目錄加成 marketplace:
+
 ```bash
-claude plugin marketplace add <path-to-this-repo>
+git clone <repo-url> plumb
+claude plugin marketplace add ./plumb
 claude plugin install plumb@plumb-local
 ```
+
+`<repo-url>` 換成這個 repo 的網址。
 
 之後在每個 repo 跑一次 `/plumb:setup`,它會寫出 `docs/agents/plumb.md`(issue tracker、檢查指令、怎麼啟動和操作 app)。
 
