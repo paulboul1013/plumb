@@ -1,0 +1,15 @@
+{
+  "name": "factory-local",
+  "owner": {
+    "name": "paulboul1013"
+  },
+  "description": "Local marketplace for the factory plugin.",
+  "plugins": [
+    {
+      "name": "factory",
+      "source": "./",
+      "description": "Lane-routed, rigor-scaled engineering workflow for coding agents.",
+      "category": "engineering"
+    }
+  ]
+}

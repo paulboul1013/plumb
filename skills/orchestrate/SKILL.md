@@ -1,0 +1,22 @@
+---
+name: orchestrate
+description: Build a whole spec's ticket graph in one run, with parallel builder subagents across the ready frontier merging into one integration branch. Use when the Epic lane chooses a single run, or the user asks to implement a whole spec.
+---
+
+# Orchestrate
+
+The tickets are a **task graph**, not a list. The **frontier** is every ticket whose blockers are done. Keep the frontier busy.
+
+Talk to subagents through pointers: the spec path, the ticket path, the notes directory, the commits. Do not paste what a pointer already holds.
+
+1. **Read the graph.** For a local tracker, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" <dir>` and stop on any error. Then `--frontier` lists the tickets ready now.
+2. **Explore once (optional).** One Explore subagent writes notes on the relevant code and docs to a directory outside the repo that every builder can read, so builders spend their context on building.
+3. **Branch.** Create the integration branch.
+4. **Fan out.** Spawn one `factory:factory-builder` subagent per frontier ticket, in the background, each in its own worktree on its own branch based on the integration branch. Each one runs the `implement` skill on its ticket and merges the integration tip into its branch before reporting.
+5. **Split shared state first.** Two frontier tickets that write the same file do not run in parallel. Split the file, or serialize those two, and say which.
+6. **Merge as they land.** When a builder reports, check its proof output yourself, then merge its branch into the integration branch. Re-run the full checks on the integration tip. A red tip stops new merges until it is green.
+7. **Advance.** Each merge can widen the frontier. Spawn builders for the newly ready tickets.
+8. **Review the whole.** When every ticket is done, run `review` on the integration branch against the spec. Give all fixes to one fresh builder.
+9. **Finish.** Run `deliver`. Close each ticket the way the tracker closes work. Remove the builder worktrees.
+
+You own every builder's work. Read each diff before merging. A builder's "done" is a claim, not evidence. Long runs keep a `trail`.
