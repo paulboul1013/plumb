@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-if [ "${FACTORY_HOOK:-on}" = off ]; then
+if [ "${PLUMB_HOOK:-on}" = off ]; then
   exit 0
 fi
 

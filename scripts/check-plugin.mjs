@@ -44,21 +44,21 @@ export function checkPlugin(root) {
       if (/^[a-z]+:/.test(target)) continue;
       if (!existsSync(resolve(dirname(file), target))) errors.push(`${rel(file)}: broken link ${target}`);
     }
-    for (const [, slash, name] of text.matchAll(/`(\/?)(?:factory:)?([a-z][a-z-]*)`/g)) {
+    for (const [, slash, name] of text.matchAll(/`(\/?)(?:plumb:)?([a-z][a-z-]*)`/g)) {
       const skill = skills.get(name);
       if (!skill) continue;
       if (skill.userInvoked && !slash && !file.endsWith(join(name, 'SKILL.md'))) {
-        errors.push(`${rel(file)}: \`${name}\` is user-invoked; refer to it as \`/factory:${name}\` so the model suggests it instead of running it`);
+        errors.push(`${rel(file)}: \`${name}\` is user-invoked; refer to it as \`/plumb:${name}\` so the model suggests it instead of running it`);
       }
     }
   }
 
-  const router = readFileSync(join(skillsDir, 'factory', 'SKILL.md'), 'utf8');
-  const listed = new Set([...router.split('## Skills')[1].matchAll(/^- `\/?(?:factory:)?([a-z-]+)`/gm)].map((m) => m[1]));
+  const router = readFileSync(join(skillsDir, 'plumb', 'SKILL.md'), 'utf8');
+  const listed = new Set([...router.split('## Skills')[1].matchAll(/^- `\/?(?:plumb:)?([a-z-]+)`/gm)].map((m) => m[1]));
   for (const name of skills.keys()) {
-    if (name !== 'factory' && !listed.has(name)) errors.push(`skills/factory/SKILL.md: router's Skills list does not mention "${name}"`);
+    if (name !== 'plumb' && !listed.has(name)) errors.push(`skills/plumb/SKILL.md: router's Skills list does not mention "${name}"`);
   }
-  for (const name of listed) if (!skills.has(name)) errors.push(`skills/factory/SKILL.md: router lists "${name}" but no such skill exists`);
+  for (const name of listed) if (!skills.has(name)) errors.push(`skills/plumb/SKILL.md: router lists "${name}" but no such skill exists`);
 
   const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin', 'plugin.json'), 'utf8'));
   for (const a of manifest.agents ?? []) if (!existsSync(join(root, a))) errors.push(`.claude-plugin/plugin.json: agent ${a} does not exist`);

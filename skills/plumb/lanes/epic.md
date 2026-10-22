@@ -11,6 +11,6 @@ Keep steps 1 to 4 in one unbroken context. Do not clear or compact until the tic
 5. **Choose how to build.** For one ticket at a time, run `implement` per ticket and start a fresh session or subagent for each. For the whole graph in one run, run `orchestrate`.
 6. **Review the whole.** Run `review` over the integration branch against the spec.
 7. **Deliver.** Run `deliver`.
-8. **Look back.** Suggest `/factory:retro` to the user.
+8. **Look back.** Suggest `/plumb:retro` to the user.
 
 **Reply.** The spec link, the ticket graph with each ticket's state, the proof per ticket, and the decisions still open.

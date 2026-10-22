@@ -1,12 +1,12 @@
 ---
 name: setup
-description: Configure this repo for the factory skills by writing docs/agents/factory.md with the issue tracker, check commands, run surface, and domain doc layout. Run once per repo.
+description: Configure this repo for the plumb skills by writing docs/agents/plumb.md with the issue tracker, check commands, run surface, and domain doc layout. Run once per repo.
 disable-model-invocation: true
 ---
 
 # Setup
 
-Write `docs/agents/factory.md`, which every factory skill reads. Explore first, propose, confirm, then write.
+Write `docs/agents/plumb.md`, which every plumb skill reads. Explore first, propose, confirm, then write.
 
 ## 1. Explore
 
@@ -23,11 +23,11 @@ Read what exists. Do not assume.
 Show a draft with your recommended answer for each section, so the user can accept in one word. Skip a section that exploration already settled.
 
 ```markdown
-# Factory config
+# Plumb config
 
 ## Tracker
 
-<GitHub via gh | GitLab via glab | local files under .factory/<feature>/ | other: one paragraph>
+<GitHub via gh | GitLab via glab | local files under .plumb/<feature>/ | other: one paragraph>
 Ready label: <ready-for-agent>
 
 ## Checks
@@ -48,12 +48,12 @@ Ready label: <ready-for-agent>
 
 ## 3. Write
 
-Write `docs/agents/factory.md`. Then add a pointer to whichever of `CLAUDE.md` or `AGENTS.md` exists, editing an existing `## Agent skills` block in place:
+Write `docs/agents/plumb.md`. Then add a pointer to whichever of `CLAUDE.md` or `AGENTS.md` exists, editing an existing `## Agent skills` block in place:
 
 ```markdown
 ## Agent skills
 
-Factory config: `docs/agents/factory.md`.
+Plumb config: `docs/agents/plumb.md`.
 ```
 
 If neither file exists, ask which to create. Never create the second one when one exists.

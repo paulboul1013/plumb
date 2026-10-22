@@ -7,7 +7,7 @@ description: Turn the aligned conversation into a spec and publish it to the con
 
 Synthesize what the conversation already settled. Do not interview again. If a decision is still open, list it under Open decisions rather than inventing an answer.
 
-Read `docs/agents/factory.md` for the tracker. If none is configured, write to `.factory/<feature-slug>/spec.md`.
+Read `docs/agents/plumb.md` for the tracker. If none is configured, write to `.plumb/<feature-slug>/spec.md`.
 
 Use the glossary's terms throughout and respect the ADRs in the area.
 

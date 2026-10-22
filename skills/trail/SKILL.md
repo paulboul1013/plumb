@@ -5,7 +5,7 @@ description: Keep a decision log for long, autonomous, or Strict-rigor work, one
 
 # Trail
 
-Append one row per decision to `.factory/trail.tsv`. Create it with this header if it does not exist:
+Append one row per decision to `.plumb/trail.tsv`. Create it with this header if it does not exist:
 
 ```
 time	decision	why	evidence	result
@@ -19,6 +19,6 @@ time	decision	why	evidence	result
 
 Log a decision when you take a default the user could overturn, pick between designs, revert a hypothesis, re-classify the lane or rigor, or skip a lane step. Do not log routine edits.
 
-Keep the file local by default (add `.factory/trail.tsv` to `.git/info/exclude`). Commit it only when a reviewer needs the record to trust the result.
+Keep the file local by default (add `.plumb/trail.tsv` to `.git/info/exclude`). Commit it only when a reviewer needs the record to trust the result.
 
 In the final reply, list every `pending` row and every user-away default.

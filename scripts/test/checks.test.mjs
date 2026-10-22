@@ -67,5 +67,5 @@ test('the plugin check catches a long dash, a bare user-invoked reference, and a
   const errors = checkPlugin(dir);
   assert.ok(errors.some((e) => e.startsWith('skills/tdd/SKILL.md:') && e.includes('long dash')));
   assert.ok(errors.some((e) => e.includes('`retro` is user-invoked')));
-  assert.ok(errors.includes(`skills/factory/SKILL.md: router's Skills list does not mention "ghost"`));
+  assert.ok(errors.includes(`skills/plumb/SKILL.md: router's Skills list does not mention "ghost"`));
 });

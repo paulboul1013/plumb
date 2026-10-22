@@ -1,13 +1,13 @@
 ---
-name: factory
-description: Route an engineering task to the right lane and rigor before work starts. Use at the start of any code change, bug, refactor, design question, investigation, or multi-session build, and for /factory.
+name: plumb
+description: Route an engineering task to the right lane and rigor before work starts. Use at the start of any code change, bug, refactor, design question, investigation, or multi-session build, and for /plumb.
 ---
 
-# Factory
+# Plumb
 
 Every task runs one **lane** at one **rigor**. The lane is the sequence of steps. The rigor sets how heavy each step is. Classify first, then work the lane.
 
-Read `docs/agents/factory.md` if it exists. It names the issue tracker, the check commands, and how to drive the app. If it is missing and the lane needs one of those, run `/factory:setup` or infer them from the repo and say what you inferred.
+Read `docs/agents/plumb.md` if it exists. It names the issue tracker, the check commands, and how to drive the app. If it is missing and the lane needs one of those, run `/plumb:setup` or infer them from the repo and say what you inferred.
 
 ## 1. Pick the lane
 
@@ -99,6 +99,6 @@ Model-invoked. The lanes call these.
 
 User-invoked. Only the user types these.
 
-- `/factory:setup`: configure tracker, checks, and the run surface for this repo.
-- `/factory:retro`: turn the session's mistakes into checks and standards.
-- `/factory:handoff`: write a handoff file for another session or person.
+- `/plumb:setup`: configure tracker, checks, and the run surface for this repo.
+- `/plumb:retro`: turn the session's mistakes into checks and standards.
+- `/plumb:handoff`: write a handoff file for another session or person.

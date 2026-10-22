@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-if [ "${FACTORY_HOOK:-on}" = off ]; then
+if [ "${PLUMB_HOOK:-on}" = off ]; then
   exit 0
 fi
 
@@ -12,12 +12,12 @@ if printf '%s' "$input" | grep -Eq '"stop_hook_active"[[:space:]]*:[[:space:]]*t
 fi
 
 cd "${CLAUDE_PROJECT_DIR:-.}"
-[ -f docs/agents/factory.md ] || [ -d .factory ] || exit 0
+[ -f docs/agents/plumb.md ] || [ -d .plumb ] || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 [ -n "$(git status --porcelain 2>/dev/null)" ] || exit 0
 
 # Block once per working-tree state, so waiting on background reviewers does not re-trigger it.
-marker="$(git rev-parse --git-dir)/factory-stop-gate"
+marker="$(git rev-parse --git-dir)/plumb-stop-gate"
 state=$({ git status --porcelain; git diff HEAD; } 2>/dev/null | cksum)
 if [ -f "$marker" ] && [ "$(cat "$marker")" = "$state" ]; then
   exit 0

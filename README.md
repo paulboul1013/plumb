@@ -1,6 +1,6 @@
-# factory
+# plumb
 
-給 coding agent 用的軟體工廠流程。每個任務先分「車道」(lane),再依大小與可逆性設定「嚴謹度」(rigor),然後才動手。
+先探到底,再動手;做完拿現實當鉛垂線校正。plumb 是給 coding agent 用的工程流程:每個任務先分「車道」(lane),再依大小與可逆性設定「嚴謹度」(rigor)。
 
 它結合了兩套流程的長處:
 
@@ -9,7 +9,7 @@
 
 ## 為什麼要混合
 
-| 問題 | Matt 的做法 | pstack 的做法 | factory 的取捨 |
+| 問題 | Matt 的做法 | pstack 的做法 | plumb 的取捨 |
 | --- | --- | --- | --- |
 | Agent 做錯東西 | 每次都 grill 使用者 | 盡量不擋人,能跑就跑 | 問題先分三類:事實自己查、可實驗的自己跑、只有使用者能決定的才問(`align`) |
 | 流程太重或太輕 | 一條主流程 + 入口 | 二十多個 playbook | 6 條車道 × 3 級嚴謹度,用「大小 × 單向門」表格決定 |
@@ -17,11 +17,11 @@
 | 大泥球 | deep module 詞彙 | 先定資料結構、多方案比較 | `design`:先寫呼叫端、定資料形狀,Strict 時平行產生 2 到 3 個方案 |
 | 多 session 工作 | spec → tickets → 依 frontier 平行實作 | 每個 PR 一個 owner + 驗證 | `tickets` 每張都要有 Proof,`check-tickets.mjs` 驗證依賴圖,`orchestrate` 依 frontier 平行建構 |
 | Review 被單一視角主導 | Standards + Spec 兩軸分開跑 | 多模型對抗式 review | Standards、Spec、Proof 三軸分開,Strict 再加雙模型對抗 |
-| 同樣的錯一直犯 | retro 改環境 | 把教訓編進結構 | `/factory:retro` 依序嘗試:結構、檢查、測試、規範、指標,並證明檢查會在舊錯誤上變紅 |
+| 同樣的錯一直犯 | retro 改環境 | 把教訓編進結構 | `/plumb:retro` 依序嘗試:結構、檢查、測試、規範、指標,並證明檢查會在舊錯誤上變紅 |
 
 ## 車道與嚴謹度
 
-`factory` 路由 skill 先挑車道:
+`plumb` 路由 skill 先挑車道:
 
 | 訊號 | 車道 |
 | --- | --- |
@@ -41,7 +41,7 @@
 | M 跨模組邊界 | Standard | Strict |
 | L 跨子系統或 session | Strict | Strict |
 
-嚴謹度決定每一步有多重。例如 Light 只要一句話確認目標、跑一次最近的檢查,Strict 則要完整 `align` + `domain`、多方案設計、characterization pin、三軸 + 對抗 review、`trail` 決策紀錄。細節在 [skills/factory/SKILL.md](skills/factory/SKILL.md)。
+嚴謹度決定每一步有多重。例如 Light 只要一句話確認目標、跑一次最近的檢查,Strict 則要完整 `align` + `domain`、多方案設計、characterization pin、三軸 + 對抗 review、`trail` 決策紀錄。細節在 [skills/plumb/SKILL.md](skills/plumb/SKILL.md)。
 
 證據改變時要重新分類,例如修 bug 時發現原因橫跨三個模組,就從 Light 升到 Standard。
 
@@ -54,43 +54,43 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
                  ┌────────────────────┴───────────────────┐
            implement(每張 ticket 開新 session)     orchestrate(依 frontier 平行)
                  └────────────────────┬───────────────────┘
-                            review(三軸)─► deliver ─► /factory:retro
+                            review(三軸)─► deliver ─► /plumb:retro
 ```
 
 ## Skills
 
-模型可自動呼叫:`factory`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`。
+模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`。
 
-只有使用者能呼叫:`/factory:setup`、`/factory:retro`、`/factory:handoff`。
+只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`。
 
-Agents:`factory-builder`(實作單一 ticket)、`factory-reviewer`(唯讀,一次只看一個 review 軸)。
+Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(唯讀,一次只看一個 review 軸)。
 
 ## 安裝
 
 ```bash
 claude plugin marketplace add <path-to-this-repo>
-claude plugin install factory@factory-local
+claude plugin install plumb@plumb-local
 ```
 
-之後在每個 repo 跑一次 `/factory:setup`,它會寫出 `docs/agents/factory.md`(issue tracker、檢查指令、怎麼啟動和操作 app)。
+之後在每個 repo 跑一次 `/plumb:setup`,它會寫出 `docs/agents/plumb.md`(issue tracker、檢查指令、怎麼啟動和操作 app)。
 
 ### Hooks
 
-- **SessionStart**:注入路由指令,讓 agent 在任何程式變更前先呼叫 `factory` skill。
-- **Stop(完成閘門)**:只在已跑過 `/factory:setup`(有 `docs/agents/factory.md` 或 `.factory/`)的 repo 生效。工作目錄有未 commit 的變更時,第一次停止會被擋下一次,要求 agent 補印車道與嚴謹度、確認每個步驟完成或寫明跳過理由,並在 Standard 或 Strict 時跑 `review`。同一個工作目錄狀態只擋一次,第二次停止一定放行,所以不會無限循環。
+- **SessionStart**:注入路由指令,讓 agent 在任何程式變更前先呼叫 `plumb` skill。
+- **Stop(完成閘門)**:只在已跑過 `/plumb:setup`(有 `docs/agents/plumb.md` 或 `.plumb/`)的 repo 生效。工作目錄有未 commit 的變更時,第一次停止會被擋下一次,要求 agent 補印車道與嚴謹度、確認每個步驟完成或寫明跳過理由,並在 Standard 或 Strict 時跑 `review`。同一個工作目錄狀態只擋一次,第二次停止一定放行,所以不會無限循環。
 
 實測發現單靠文字指示,agent 在小 repo 上常會跳過 review;加上這個閘門後,review 才穩定執行,而且在測試中抓到了真的捨入 bug。
 
 ### 和 pstack 並存
 
-pstack 的 SessionStart hook 會要求所有任務先走 `poteto-mode`,和 factory 的路由衝突。兩個都裝時,關掉其中一個 hook:
+pstack 的 SessionStart hook 會要求所有任務先走 `poteto-mode`,和 plumb 的路由衝突。兩個都裝時,關掉其中一個 hook:
 
 - 關 pstack 的:在 `~/.claude/pstack-models.md` 把 `session hook: on` 改成 `session hook: off`。
-- 關 factory 的:設定環境變數 `FACTORY_HOOK=off`。
+- 關 plumb 的:設定環境變數 `PLUMB_HOOK=off`。
 
 pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用。
 
-完整的切換步驟(用 factory、換回 pstack、兩邊都關)見 [docs/pstack-conflict.md](docs/pstack-conflict.md)。
+完整的切換步驟(用 plumb、換回 pstack、兩邊都關)見 [docs/pstack-conflict.md](docs/pstack-conflict.md)。
 
 ## 使用方式
 
@@ -99,23 +99,23 @@ pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用�
 在專案目錄開 Claude Code,輸入:
 
 ```
-/factory:setup
+/plumb:setup
 ```
 
 agent 會先讀 repo(git remote、`package.json` 等設定檔、CI、`GLOSSARY.md`),再提出一份草稿讓你確認,內容包括:
 
-- **Tracker**:ticket 放哪裡。可以是 GitHub、GitLab,或本機的 `.factory/<功能名>/tickets/`。
+- **Tracker**:ticket 放哪裡。可以是 GitHub、GitLab,或本機的 `.plumb/<功能名>/tickets/`。
 - **Checks**:typecheck、lint、單一測試檔、完整測試的指令。
 - **Run surface**:怎麼啟動 app、怎麼操作它來驗證。
 - **Domain docs**:`GLOSSARY.md` 和 ADR 放哪裡。
 
-確認後會寫出 `docs/agents/factory.md`,並在 `CLAUDE.md` 或 `AGENTS.md` 加一行指向它。之後可以直接手改這個檔案。
+確認後會寫出 `docs/agents/plumb.md`,並在 `CLAUDE.md` 或 `AGENTS.md` 加一行指向它。之後可以直接手改這個檔案。
 
 設定完成後,這個 repo 也會啟用 Stop 完成閘門。
 
 ### 2. 平常怎麼用:直接描述任務
 
-不用記指令。直接用一般的話描述你要做的事,agent 會先呼叫 `factory` 路由,印出一行分類,例如:
+不用記指令。直接用一般的話描述你要做的事,agent 會先呼叫 `plumb` 路由,印出一行分類,例如:
 
 ```
 lane: Bug · rigor: Light (S, two-way) · why: 只改 cart.js 的加總邏輯
@@ -156,8 +156,8 @@ Epic 車道的流程:
 2. **確認 tickets。** agent 會列出 tickets 和它們的依賴,問你粒度和依賴對不對。確認後寫進 tracker。用本機 tracker 時,可以自己檢查 ticket 和看哪些可以開工:
 
    ```bash
-   node ~/matt_pstack/scripts/check-tickets.mjs .factory/<功能名>/tickets
-   node ~/matt_pstack/scripts/check-tickets.mjs .factory/<功能名>/tickets --frontier
+   node ~/matt_pstack/scripts/check-tickets.mjs .plumb/<功能名>/tickets
+   node ~/matt_pstack/scripts/check-tickets.mjs .plumb/<功能名>/tickets --frontier
    ```
 
 3. **選一種實作方式:**
@@ -167,7 +167,7 @@ Epic 車道的流程:
 
 ### 5. 讓它自己跑
 
-說「我要離開,你自己跑完」或「不用問我」,agent 會改用建議答案繼續,並把每個代替你做的決定記在 `.factory/trail.tsv`。最後的回覆會列出這些決定,讓你回來時可以推翻。
+說「我要離開,你自己跑完」或「不用問我」,agent 會改用建議答案繼續,並把每個代替你做的決定記在 `.plumb/trail.tsv`。最後的回覆會列出這些決定,讓你回來時可以推翻。
 
 即使你這樣說,下列動作仍然會停下來問你:force-push 共用分支、部署、刪資料、對外發訊息、merge。
 
@@ -175,23 +175,23 @@ Epic 車道的流程:
 
 | 指令 | 用途 | 什麼時候用 |
 | --- | --- | --- |
-| `/factory:setup` | 設定這個 repo | 每個專案第一次用之前 |
-| `/factory:retro` | 回顧這個 session,把犯過的錯變成 lint、測試或規範 | 做完一件事之後,尤其是過程不順的時候 |
-| `/factory:handoff` | 寫一份交接檔,讓另一個 session 或別人接手 | 換目錄、換工具、交給別人、或要暫停很久 |
+| `/plumb:setup` | 設定這個 repo | 每個專案第一次用之前 |
+| `/plumb:retro` | 回顧這個 session,把犯過的錯變成 lint、測試或規範 | 做完一件事之後,尤其是過程不順的時候 |
+| `/plumb:handoff` | 寫一份交接檔,讓另一個 session 或別人接手 | 換目錄、換工具、交給別人、或要暫停很久 |
 
 ### 7. 手動呼叫單一 skill
 
 不想走完整車道時,可以直接叫單一 skill:
 
-- `/factory:tdd`:只用 red-green 寫測試和實作。
-- `/factory:diagnose`:只做除錯流程。
-- `/factory:review`:review 目前分支,例如「review 從 main 到現在的變更」。
-- `/factory:align`:只要被問問題、把想法釐清。
-- `/factory:prove`:只驗證某個變更真的能用。
+- `/plumb:tdd`:只用 red-green 寫測試和實作。
+- `/plumb:diagnose`:只做除錯流程。
+- `/plumb:review`:review 目前分支,例如「review 從 main 到現在的變更」。
+- `/plumb:align`:只要被問問題、把想法釐清。
+- `/plumb:prove`:只驗證某個變更真的能用。
 
 ### 8. 怎麼確認它有在運作
 
-- 每次改程式前,agent 會先呼叫 `factory:factory`,並印出 `lane: ... · rigor: ...`。
+- 每次改程式前,agent 會先呼叫 `plumb:plumb`,並印出 `lane: ... · rigor: ...`。
 - 最後的回覆會以同一行分類開頭,並附上實際跑出來的輸出。
 - 在設定過的 repo,如果 agent 還沒 review 就想停,會看到它被完成閘門擋下一次,然後補跑 review。
 

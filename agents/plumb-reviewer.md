@@ -1,6 +1,6 @@
 ---
-name: factory-reviewer
-description: Reviews a diff on exactly one axis (Standards, Spec, Proof, or adversarial) for the factory review skill. Read-only. Spawned in parallel, one per axis.
+name: plumb-reviewer
+description: Reviews a diff on exactly one axis (Standards, Spec, Proof, or adversarial) for the plumb review skill. Read-only. Spawned in parallel, one per axis.
 tools: Read, Grep, Glob, Bash
 ---
 

@@ -1,12 +1,12 @@
 {
-  "name": "factory-local",
+  "name": "plumb-local",
   "owner": {
     "name": "paulboul1013"
   },
-  "description": "Local marketplace for the factory plugin.",
+  "description": "Local marketplace for the plumb plugin.",
   "plugins": [
     {
-      "name": "factory",
+      "name": "plumb",
       "source": "./",
       "description": "Lane-routed, rigor-scaled engineering workflow for coding agents.",
       "category": "engineering"

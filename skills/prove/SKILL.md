@@ -9,7 +9,7 @@ Check the real thing directly. Tests show the branches you thought of. A live ru
 
 ## Pick the surface
 
-Read `docs/agents/factory.md` for how to drive the app. Otherwise pick by what changed:
+Read `docs/agents/plumb.md` for how to drive the app. Otherwise pick by what changed:
 
 - A library or pure logic: the tests at the agreed seams, plus one call through the public interface with a real input.
 - A CLI: run the command with real input and show stdout, stderr, and the exit code.

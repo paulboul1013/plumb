@@ -13,13 +13,13 @@ Use the ref the user or lane gave (a SHA, branch, tag, or `main`). Confirm it re
 
 ## 2. Gather the sources
 
-- **Spec.** The ticket, the spec, or the acceptance list. Look in commit messages for issue refs, then the lane's context, then `.factory/` and `docs/`. If there is none, the Spec axis reports "no spec" and skips.
+- **Spec.** The ticket, the spec, or the acceptance list. Look in commit messages for issue refs, then the lane's context, then `.plumb/` and `docs/`. If there is none, the Spec axis reports "no spec" and skips.
 - **Standards.** Every file in the repo that says how code is written: `CODING_STANDARDS.md`, `CONTRIBUTING.md`, lint configs, ADRs. Plus the smell baseline below.
 - **Proof.** The `prove` output for this change.
 
 ## 3. Run the axes in parallel
 
-Spawn one `factory:factory-reviewer` subagent per axis in the same message. Give each the diff command, the commit list, and only its own sources. Each report stays under 400 words and quotes the hunk or spec line for every finding.
+Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. Give each the diff command, the commit list, and only its own sources. Each report stays under 400 words and quotes the hunk or spec line for every finding.
 
 - **Standards.** Every breach of a documented standard, citing the file and rule. Every baseline smell, labelled as a judgement call. A documented repo standard overrides the baseline. Skip what tooling already enforces.
 - **Spec.** Requirements missing or partial. Behavior nobody asked for. Requirements that look done but are done wrong.

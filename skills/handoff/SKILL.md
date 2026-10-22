@@ -28,6 +28,6 @@ Save it to `$TMPDIR` (else `/tmp`), not the workspace. Include:
 - **Pointers.** The spec, tickets, ADRs, PRs, the trail file, prototype branches. Link them. Do not copy what they hold.
 - **Decisions.** Each decision taken and who made it. Mark the ones the user has not confirmed.
 - **Next steps.** The next three actions, in order.
-- **Suggested skills.** Which factory skills the next agent should run first.
+- **Suggested skills.** Which plumb skills the next agent should run first.
 
 Redact keys, passwords, and personal data. Print the file path.

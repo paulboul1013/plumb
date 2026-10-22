@@ -26,10 +26,10 @@ Break the work into **tracer bullets**: thin slices that each cut through every 
 
 ## Local tracker
 
-One file per ticket at `.factory/<feature-slug>/tickets/<NN>-<slug>.md`, numbered from `01` with blockers first, so every blocker has a lower number. Then run:
+One file per ticket at `.plumb/<feature-slug>/tickets/<NN>-<slug>.md`, numbered from `01` with blockers first, so every blocker has a lower number. Then run:
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" .factory/<feature-slug>/tickets
+node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" .plumb/<feature-slug>/tickets
 ```
 
 Fix every line it prints. The same script with `--frontier` lists the tickets ready to start.

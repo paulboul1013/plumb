@@ -10,7 +10,7 @@ Reach a shared understanding before code. Map the work as a **design tree**: eac
 ## Sort every question first
 
 - **Fact** (what the code does, what exists, what changed). Look it up yourself. Send a subagent for a wide search. Only the questions that depend on that fact wait for it.
-- **Empirical** (does it work, how fast, how it looks). Run it, or hand it to the Prototype lane in [../factory/lanes/prototype.md](../factory/lanes/prototype.md).
+- **Empirical** (does it work, how fast, how it looks). Run it, or hand it to the Prototype lane in [../plumb/lanes/prototype.md](../plumb/lanes/prototype.md).
 - **Decision** (product behavior, scope, domain naming, risk, taste). This is the user's. Ask it.
 
 Only decisions reach the user.

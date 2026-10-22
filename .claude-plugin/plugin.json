@@ -1,7 +1,7 @@
 {
-  "name": "factory",
+  "name": "plumb",
   "version": "0.1.0",
-  "description": "A software factory for coding agents. Routes every change to a lane (bug, refactor, feature, epic, prototype, investigate) and sets rigor by size and reversibility. Combines Matt Pocock's alignment flow (grilling, glossary, spec, tracer-bullet tickets, two-axis review) with pstack's routing, real-surface proof, and lessons encoded as checks.",
+  "description": "Plumb the problem before you build, then plumb the result against reality. Routes every change to a lane (bug, refactor, feature, epic, prototype, investigate) and sets rigor by size and reversibility. Combines Matt Pocock's alignment flow (grilling, glossary, spec, tracer-bullet tickets, two-axis review) with pstack's routing, real-surface proof, and lessons encoded as checks.",
   "author": {
     "name": "paulboul1013"
   },
@@ -17,7 +17,7 @@
     "verification"
   ],
   "agents": [
-    "./agents/factory-builder.md",
-    "./agents/factory-reviewer.md"
+    "./agents/plumb-builder.md",
+    "./agents/plumb-reviewer.md"
   ]
 }

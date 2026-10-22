@@ -1,7 +1,7 @@
 <EXTREMELY_IMPORTANT>
-You have the factory plugin.
+You have the plumb plugin.
 
-Before any code change, bug, refactor, design question, or multi-session build, invoke the `factory:factory` skill. It picks the lane and the rigor and tells you which factory skills to run.
+Before any code change, bug, refactor, design question, or multi-session build, invoke the `plumb:plumb` skill. It picks the lane and the rigor and tells you which plumb skills to run.
 
 Skip the router for a question you can answer from what you already know, or a one-line edit with an obvious check. Still run the check and show its output.
 
