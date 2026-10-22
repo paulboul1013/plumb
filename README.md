@@ -92,6 +92,109 @@ pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用�
 
 完整的切換步驟(用 factory、換回 pstack、兩邊都關)見 [docs/pstack-conflict.md](docs/pstack-conflict.md)。
 
+## 使用方式
+
+### 1. 每個專案先設定一次
+
+在專案目錄開 Claude Code,輸入:
+
+```
+/factory:setup
+```
+
+agent 會先讀 repo(git remote、`package.json` 等設定檔、CI、`GLOSSARY.md`),再提出一份草稿讓你確認,內容包括:
+
+- **Tracker**:ticket 放哪裡。可以是 GitHub、GitLab,或本機的 `.factory/<功能名>/tickets/`。
+- **Checks**:typecheck、lint、單一測試檔、完整測試的指令。
+- **Run surface**:怎麼啟動 app、怎麼操作它來驗證。
+- **Domain docs**:`GLOSSARY.md` 和 ADR 放哪裡。
+
+確認後會寫出 `docs/agents/factory.md`,並在 `CLAUDE.md` 或 `AGENTS.md` 加一行指向它。之後可以直接手改這個檔案。
+
+設定完成後,這個 repo 也會啟用 Stop 完成閘門。
+
+### 2. 平常怎麼用:直接描述任務
+
+不用記指令。直接用一般的話描述你要做的事,agent 會先呼叫 `factory` 路由,印出一行分類,例如:
+
+```
+lane: Bug · rigor: Light (S, two-way) · why: 只改 cart.js 的加總邏輯
+```
+
+然後照那條車道的步驟做。各車道的說法範例:
+
+| 你說 | 車道 | agent 會做的事 |
+| --- | --- | --- |
+| 「購物車數量 2 的時候總價算錯」 | Bug | 先做出一個會在這個 bug 上失敗的指令,再找原因、修、證明修好 |
+| 「把 auth 模組拆成兩個檔案,行為不要變」 | Refactor | 先用測試釘住目前行為,刪多餘的東西,再小步搬移,每步都保持測試通過 |
+| 「訂單加上折扣碼功能」 | Feature | 對齊需求、設計資料形狀和測試 seam、TDD 實作、實際跑、review |
+| 「我們要做多租戶,先規劃」 | Epic | 完整對齊、寫 spec、切 tickets,再一張一張或平行實作 |
+| 「列表用卡片還是表格比較好?做出來看看」 | Prototype | 在暫存位置做 2 到 4 個可切換的版本,截圖比較,給建議 |
+| 「這個 retry 機制是怎麼運作的?」 | Investigate | 只讀不改,回答時附上檔案和行號 |
+
+如果分類不對,直接糾正就好,例如「這是單向門,用 Strict」或「這很小,用 Light」。
+
+### 3. agent 問你問題時
+
+`align` 只會問只有你能決定的事(產品行為、範圍、命名、取捨)。查得到的事實和跑得出來的問題,agent 會自己處理。
+
+問題會一輪一輪來,每題附上建議答案:
+
+```
+**Q1. 折扣碼可以疊加嗎?** 一張訂單用多個碼,還是只能用一個?
+
+Recommended: 只能一個。疊加的計算順序會牽涉到退款邏輯,之後再做。
+```
+
+回答「yes」就是接受建議;不同意就直接說你的答案。可以一次回多題,例如「Q1 yes,Q2 改成每月重置」。
+
+### 4. 大型工作(Epic)
+
+Epic 車道的流程:
+
+1. **對齊和 spec。** 對齊、寫 spec、切 tickets 這幾步要在同一個 session 裡做完,中間不要 `/clear`。
+2. **確認 tickets。** agent 會列出 tickets 和它們的依賴,問你粒度和依賴對不對。確認後寫進 tracker。用本機 tracker 時,可以自己檢查 ticket 和看哪些可以開工:
+
+   ```bash
+   node ~/matt_pstack/scripts/check-tickets.mjs .factory/<功能名>/tickets
+   node ~/matt_pstack/scripts/check-tickets.mjs .factory/<功能名>/tickets --frontier
+   ```
+
+3. **選一種實作方式:**
+   - 一張一張做:每張 ticket 開新 session,說「implement ticket 03」。
+   - 一次做完:說「orchestrate 這個 spec」,agent 會依依賴關係平行開多個 builder,合併到同一條 integration branch。
+4. **最後** 整條 branch 跑一次 review,再整理 commit 和 PR。
+
+### 5. 讓它自己跑
+
+說「我要離開,你自己跑完」或「不用問我」,agent 會改用建議答案繼續,並把每個代替你做的決定記在 `.factory/trail.tsv`。最後的回覆會列出這些決定,讓你回來時可以推翻。
+
+即使你這樣說,下列動作仍然會停下來問你:force-push 共用分支、部署、刪資料、對外發訊息、merge。
+
+### 6. 只有你能呼叫的指令
+
+| 指令 | 用途 | 什麼時候用 |
+| --- | --- | --- |
+| `/factory:setup` | 設定這個 repo | 每個專案第一次用之前 |
+| `/factory:retro` | 回顧這個 session,把犯過的錯變成 lint、測試或規範 | 做完一件事之後,尤其是過程不順的時候 |
+| `/factory:handoff` | 寫一份交接檔,讓另一個 session 或別人接手 | 換目錄、換工具、交給別人、或要暫停很久 |
+
+### 7. 手動呼叫單一 skill
+
+不想走完整車道時,可以直接叫單一 skill:
+
+- `/factory:tdd`:只用 red-green 寫測試和實作。
+- `/factory:diagnose`:只做除錯流程。
+- `/factory:review`:review 目前分支,例如「review 從 main 到現在的變更」。
+- `/factory:align`:只要被問問題、把想法釐清。
+- `/factory:prove`:只驗證某個變更真的能用。
+
+### 8. 怎麼確認它有在運作
+
+- 每次改程式前,agent 會先呼叫 `factory:factory`,並印出 `lane: ... · rigor: ...`。
+- 最後的回覆會以同一行分類開頭,並附上實際跑出來的輸出。
+- 在設定過的 repo,如果 agent 還沒 review 就想停,會看到它被完成閘門擋下一次,然後補跑 review。
+
 ## 檢查腳本
 
 ```bash
