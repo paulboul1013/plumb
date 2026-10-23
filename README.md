@@ -76,12 +76,10 @@ Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(唯讀,一次只�
 先把這個 repo clone 到本機,再把 clone 下來的目錄加成 marketplace:
 
 ```bash
-git clone <repo-url> plumb
+git clone https://github.com/paulboul1013/plumb.git plumb
 claude plugin marketplace add ./plumb
 claude plugin install plumb@plumb-local
 ```
-
-`<repo-url>` 換成這個 repo 的網址。
 
 之後在每個 repo 跑一次 `/plumb:setup`,它會寫出 `docs/agents/plumb.md`(issue tracker、檢查指令、怎麼啟動和操作 app)。
 
@@ -167,9 +165,11 @@ Epic 車道的流程:
 2. **確認 tickets。** agent 會列出 tickets 和它們的依賴,問你粒度和依賴對不對。確認後寫進 tracker。用本機 tracker 時,可以自己檢查 ticket 和看哪些可以開工:
 
    ```bash
-   node ~/matt_pstack/scripts/check-tickets.mjs .plumb/<功能名>/tickets
-   node ~/matt_pstack/scripts/check-tickets.mjs .plumb/<功能名>/tickets --frontier
+   node <plumb 目錄>/scripts/check-tickets.mjs .plumb/<功能名>/tickets
+   node <plumb 目錄>/scripts/check-tickets.mjs .plumb/<功能名>/tickets --frontier
    ```
+
+   `<plumb 目錄>` 是[安裝](#安裝)時 clone 下來的那個目錄。
 
 3. **選一種實作方式:**
    - 一張一張做:每張 ticket 開新 session,說「implement ticket 03」。
