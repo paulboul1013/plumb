@@ -1,5 +1,9 @@
 # plumb
 
+<p align="center"><img src="docs/plumb-icon.png" alt="plumb icon" width="140"></p>
+
+![plumb 高速公路：任務經路由交流道分到 6 條車道並判定車種（嚴謹度），每台車都過同一排 ETC 門架（步驟），車種越大每一站做得越重](docs/plumb-workflow.png)
+
 先探到底,再動手;做完拿現實當鉛垂線校正。plumb 是給 coding agent 用的工程流程:每個任務先分「車道」(lane),再依大小與可逆性設定「嚴謹度」(rigor)。
 
 它結合了兩套流程的長處:

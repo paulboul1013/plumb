@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="#1f7a5a"/>
+  <!-- crossbar the line hangs from -->
+  <rect x="136" y="92" width="240" height="22" rx="11" fill="#fbfaf7"/>
+  <!-- the plumb line -->
+  <line x1="256" y1="114" x2="256" y2="218" stroke="#fbfaf7" stroke-width="8" stroke-linecap="round"/>
+  <!-- the bob: left half from workflow A, right half from workflow B -->
+  <path d="M256 214 L224 214 Q206 214 206 232 L206 262 Q206 290 224 316 L256 412 Z" fill="#3b6fd8"/>
+  <path d="M256 214 L288 214 Q306 214 306 232 L306 262 Q306 290 288 316 L256 412 Z" fill="#e07b24"/>
+  <rect x="226" y="206" width="60" height="16" rx="6" fill="#fbfaf7"/>
+  <!-- true vertical reference -->
+  <line x1="256" y1="424" x2="256" y2="444" stroke="#fbfaf7" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+  <line x1="196" y1="444" x2="316" y2="444" stroke="#fbfaf7" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+</svg>
