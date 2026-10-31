@@ -48,7 +48,7 @@ Each is a hint, never a hard rule.
 - **Shotgun surgery.** One change forces edits across many files. Gather what changes together.
 - **Speculative generality.** Parameters, hooks, or layers no requirement needs. Delete them.
 - **Middle man.** A module that only forwards. Call the target directly.
-- **Comment as apology.** A comment that explains confusing code instead of the code being clear, or narrates what the next line does. Fix the code and delete the comment. Keep only comments that give a reason the code cannot show.
+- **Comment as apology.** A comment that explains confusing code instead of the code being clear, or narrates what the next line does. Fix the code and delete the comment. Keep only comments that give a reason the code cannot show. A comment that states a rule of a dependency, platform, vendor, or protocol is such a reason, even when it reads like narration, because the rule lives in that system's docs, not in this repo. Flag it for deletion only with the documentation page or source file that refutes the rule. Otherwise report it as `HOLD`, name where to check, and leave it in place.
 
 ## 5. Report
 
