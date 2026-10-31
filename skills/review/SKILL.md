@@ -33,7 +33,7 @@ Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. If subag
 
 ## 4. Strict rigor: the adversarial panel
 
-Add two more reviewers on different models (for example `opus` and `sonnet`), each told to find the strongest reason this change should not merge: a broken caller outside the diff, a race, a one-way change door without a rollback, a security hole. A finding both models raise is high-signal. A finding only one raises needs evidence before it counts.
+Add two more reviewers on different models (for example `opus` and `sonnet`), each told to find the strongest reason this change should not merge: a broken caller outside the diff, a race, a one-way change door without a rollback, a security hole, a change to how developers run or build the code (where secrets are read from, environment variable names, ports, a new script that must run), or a feature that leaks past its flag or internal-only check. A finding both models raise is high-signal. A finding only one raises needs evidence before it counts.
 
 ## Smell baseline
 

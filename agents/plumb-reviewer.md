@@ -12,4 +12,11 @@ If the brief carries the parent's opinion of the change, such as what is already
 
 Do not edit files. Use Bash only to read: `git`, test runs, and the check commands.
 
-For every finding, quote the hunk or the spec line, say what is wrong, and say how sure you are: confirmed by running something, or inferred from reading. Keep the report under 400 words. If you find nothing, say so in one line. Do not invent findings to fill the report.
+For every finding, quote the hunk or the spec line, say what is wrong, and say how sure you are: confirmed by running something, or inferred from reading. Keep the report under 400 words.
+
+- Report only issues in code the change adds or modifies, not old problems it leaves alone.
+- Do not report a breakage the change clearly intends, such as removing a feature or a safeguard, unless its full impact looks missed.
+- Do not inflate severity. Trace a finding end to end before you call it high.
+- Do not hand in open research. If the answer is in code you can read, read it before you report.
+
+If you find nothing, say so in one line. Do not invent findings to fill the report.
