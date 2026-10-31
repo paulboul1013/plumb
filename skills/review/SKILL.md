@@ -25,7 +25,7 @@ It covers commits since `<ref>`, staged and unstaged edits, and new untracked fi
 
 ## 3. Run the axes in parallel
 
-Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. If subagents are not allowed, run each axis in a fresh context that sees only the diff and that axis's sources, as the plumb skill's Subagents section says. Give each the `review-diff.mjs` command from step 1, the commit list, and only its own sources. Each report stays under 400 words and quotes the hunk or spec line for every finding.
+Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. If subagents are not allowed, run each axis in a fresh context that sees only the diff and that axis's sources, as the plumb skill's Subagents section says. Give each the `review-diff.mjs` command from step 1, the commit list, and only its own sources. Do not add your own verdict: no "this looks fine", no "I already handled X", no list of what you think is risky. The reviewer judges the diff from the sources alone. Each report stays under 400 words and quotes the hunk or spec line for every finding.
 
 - **Standards.** Every breach of a documented standard, citing the file and rule. Every baseline smell, labelled as a judgement call. A documented repo standard overrides the baseline. Skip what tooling already enforces.
 - **Spec.** Requirements missing or partial. Behavior nobody asked for. Requirements that look done but are done wrong.
