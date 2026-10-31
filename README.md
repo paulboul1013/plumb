@@ -71,7 +71,7 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
 
 ## Skills
 
-模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`。
+模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)。
 
 只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`、`/plumb:ketchup`。
 
@@ -201,6 +201,8 @@ Epic 車道的流程:
 | `/plumb:ketchup` | 從你最後一則訊息開始,用白話補上發生了什麼,列出每個等你決定的事(附建議、依據、風險)。只讀不改 | 離開一陣子回來、plumb 在背景跑很久,想知道現在怎樣、有什麼要你決定 |
 
 ### 7. 手動呼叫單一 skill
+
+不知道該用哪個時,先問 `/plumb:help`,例如「/plumb:help 我想修一個偶爾才會發生的 bug」,它會告訴你會走哪條車道、跑哪些 skill,並給一個範例 prompt。
 
 不想走完整車道時,可以直接叫單一 skill:
 

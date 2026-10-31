@@ -125,6 +125,7 @@ Model-invoked. The lanes call these.
 - `review`: review a diff on separate axes in separate subagents.
 - `deliver`: shape the commits and the PR body.
 - `trail`: a decision log for long or unattended work.
+- `help`: tell the user which lane, skill, or command fits, and how to steer a run. No lane calls it; it runs when the user asks how to use plumb or types `/plumb:help`.
 
 User-invoked. Only the user types these.
 
