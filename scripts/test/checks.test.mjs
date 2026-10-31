@@ -34,6 +34,20 @@ test('a valid graph passes and the frontier holds only tickets whose blockers ar
   assert.deepEqual(frontier.map((t) => t.file), ['02-api.md', '04-docs.md']);
 });
 
+test('an Acceptance or Proof that only appears in a fenced example does not count', () => {
+  const example = '```markdown\n## Acceptance\n\n- [ ] user sees the total\n\n## Proof\n\nnpm test -- cart\n```';
+  const body = `# 01: Cart total\n\n**Blocked by:** None\n**Status:** ready\n\n## Build\n\nShow the total. Tickets here look like:\n\n${example}\n\n## Acceptance\n\n## Proof\n`;
+  assert.deepEqual(checkTickets(ticketDir({ '01-cart.md': body })).errors, [
+    '01-cart.md: "## Acceptance" needs at least one "- [ ] <behavior>" item',
+    '01-cart.md: "## Proof" is empty: name the command, scenario, or screenshot that shows it working',
+  ]);
+});
+
+test('a Proof command written in a fenced block still counts', () => {
+  const dir = ticketDir({ '01-cart.md': ticket('01', { proof: '```bash\nnpm test -- cart\n```' }) });
+  assert.deepEqual(checkTickets(dir).errors, []);
+});
+
 test('a blocker with a higher number is rejected, which rules out cycles', () => {
   const dir = ticketDir({ '01-a.md': ticket('01', { blockedBy: '02' }), '02-b.md': ticket('02', { blockedBy: '01' }) });
   assert.deepEqual(checkTickets(dir).errors, ['01-a.md: blocker 2 must have a lower number than 1: number tickets blockers-first']);

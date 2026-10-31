@@ -4,7 +4,23 @@ import { join } from 'node:path';
 
 const STATUSES = new Set(['ready', 'in-progress', 'done']);
 
-function parseTicket(file, text) {
+// Indent every line of a fenced block so the ticket's own headings, fields, and checklist
+// items never match inside an example, while a fenced Proof command still leaves its section non-empty.
+function maskFences(text) {
+  let fence = null;
+  return text.split('\n').map((line) => {
+    const marker = line.match(/^ {0,3}(`{3,}|~{3,})/)?.[1];
+    if (!fence && marker) { fence = marker; return `    ${line}`; }
+    if (fence && marker && marker[0] === fence[0] && marker.length >= fence.length && !line.slice(line.indexOf(marker) + marker.length).trim()) {
+      fence = null;
+      return `    ${line}`;
+    }
+    return fence ? `    ${line}` : line;
+  }).join('\n');
+}
+
+function parseTicket(file, raw) {
+  const text = maskFences(raw);
   const errors = [];
   const fileNum = Number(file.match(/^(\d+)-/)[1]);
   const heading = text.match(/^# (\d+): (.+)$/m);
