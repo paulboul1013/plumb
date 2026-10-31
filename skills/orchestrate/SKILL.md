@@ -17,6 +17,6 @@ Talk to subagents through pointers: the spec path, the ticket path, the notes di
 6. **Merge as they land.** When a builder reports, check its proof output yourself, then merge its branch into the integration branch. Re-run the full checks on the integration tip. A red tip stops new merges until it is green.
 7. **Advance.** Each merge can widen the frontier. Spawn builders for the newly ready tickets.
 8. **Review the whole.** When every ticket is done, run `review` on the integration branch against the spec. Give all fixes to one fresh builder.
-9. **Finish.** Run `deliver`. Close each ticket the way the tracker closes work. Remove the builder worktrees.
+9. **Finish.** Run `deliver`. Close each ticket the way the tracker closes work. Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/worktree-check.mjs" <worktree>...` on the builder worktrees, then remove only the ones it prints `ok` for. `git worktree remove` exits 0 while it deletes ignored files such as `.env` and commits only the worktree's HEAD reflog reaches. List each held worktree and its holds in the final reply, and never pass `--force`.
 
 You own every builder's work. Read each diff before merging. A builder's "done" is a claim, not evidence. Long runs keep a `trail`.

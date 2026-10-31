@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { checkTickets } from '../check-tickets.mjs';
 import { checkPlugin } from '../check-plugin.mjs';
 import { reviewDiff } from '../review-diff.mjs';
+import { worktreeHolds } from '../worktree-check.mjs';
 import { blockReason } from '../../hooks/builder-git-guard.mjs';
 import { execFileSync } from 'node:child_process';
 
@@ -123,4 +124,47 @@ test('the builder guard blocks the git stash a plumb-builder ran, and nothing el
   for (const c of ['git status', 'git diff HEAD', 'git checkout -b feature', 'git commit -m x']) assert.equal(call(c, 'plumb:plumb-builder'), null, c);
   assert.equal(call('git stash', undefined), null);
   assert.equal(call('git stash', 'plumb:plumb-reviewer'), null);
+});
+
+function repoWithWorktree() {
+  const dir = mkdtempSync(join(tmpdir(), 'wt-'));
+  const g = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+  const repo = join(dir, 'repo');
+  mkdirSync(repo);
+  g(repo, 'init', '-q');
+  g(repo, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty', '-m', 'base');
+  writeFileSync(join(repo, '.gitignore'), '.env\nnode_modules/\n');
+  g(repo, 'add', '.gitignore');
+  g(repo, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '-m', 'ignore');
+  const wt = join(dir, 'wt');
+  g(repo, 'worktree', 'add', '-q', wt, '-b', 'builder');
+  return { wt, g };
+}
+
+test('a worktree with nothing of its own has no holds', () => {
+  const { wt } = repoWithWorktree();
+  mkdirSync(join(wt, 'node_modules'));
+  writeFileSync(join(wt, 'node_modules', 'x.js'), '');
+  assert.deepEqual(worktreeHolds(wt), []);
+});
+
+test('an ignored file outside build and cache directories holds the worktree', () => {
+  const { wt } = repoWithWorktree();
+  writeFileSync(join(wt, '.env'), 'SECRET=1\n');
+  assert.deepEqual(worktreeHolds(wt), ['ignored file that may exist nowhere else: .env']);
+});
+
+test('uncommitted work holds the worktree', () => {
+  const { wt } = repoWithWorktree();
+  writeFileSync(join(wt, 'new.txt'), 'x');
+  assert.deepEqual(worktreeHolds(wt), ['uncommitted change: ?? new.txt']);
+});
+
+test('a commit only the worktree HEAD reflog reaches holds the worktree', () => {
+  const { wt, g } = repoWithWorktree();
+  g(wt, 'switch', '-q', '--detach');
+  g(wt, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty', '-m', 'orphan');
+  const orphan = g(wt, 'rev-parse', 'HEAD');
+  g(wt, 'switch', '-q', 'builder');
+  assert.deepEqual(worktreeHolds(wt), [`commit only this worktree's HEAD reflog reaches: ${orphan}`]);
 });
