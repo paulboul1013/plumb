@@ -39,9 +39,15 @@
 | 跨 session,或終點還看不清楚 | Epic |
 | 單檔、檢查明顯、沒有設計選擇 | Direct |
 
-再用兩個軸決定嚴謹度:
+再看大小,並回答三個「門」的問題。三個門各自決定不同的事:
 
-| 大小 | 雙向門(可 revert) | 單向門(migration、公開 API、資安、刪資料) |
+- **改動門**:revert 這次改動能回到原狀嗎?不能的是單向,例如已執行的 migration、別人已在讀的檔案格式或公開 API、資安或金流程式碼。只有這個門決定下表的嚴謹度。
+- **設計門**:程式碼可以 revert,但這個形狀之後很難改嗎?例如 schema、公開 API、權限模型。有設計門時,不論嚴謹度都要比較兩到三種設計,並考慮寫 ADR。
+- **動作門**:做這個任務時,agent 自己會做不可逆的動作嗎?例如刪資料、部署、force-push、合併、對外發訊息。動作門不提高嚴謹度,只要求在那個動作前停下來問。
+
+例如在既有、會檢查權限的刪除 API 上加一個刪除按鈕:改動門是雙向(revert 就好),測試時刪掉真實資料才是動作門。
+
+| 大小 | 雙向改動門(可 revert) | 單向改動門(已執行的 migration、公開 API、資安、金流) |
 | --- | --- | --- |
 | S 單一模組 | Light | Standard |
 | M 跨模組邊界 | Standard | Strict |
@@ -88,6 +94,8 @@ claude plugin install plumb@plumb-local
 - **SessionStart**:注入路由指令,讓 agent 在任何程式變更前先呼叫 `plumb` skill。
 - **Stop(完成閘門)**:只在已跑過 `/plumb:setup`(有 `docs/agents/plumb.md` 或 `.plumb/`)的 repo 生效。工作目錄有未 commit 的變更時,第一次停止會被擋下一次,要求 agent 補印車道與嚴謹度、確認每個步驟完成或寫明跳過理由,並在 Standard 或 Strict 時跑 `review`。同一個工作目錄狀態只擋一次,第二次停止一定放行,所以不會無限循環。
 
+- **PreToolUse(builder git 防護)**:只對 `plumb-builder` 子代理生效。它執行 `git stash`、`git reset --hard`、`git checkout -- <路徑>`、`git restore`、`git clean` 會被擋下,並提示改用 `git worktree add` 對照原始版本。主代理和其他子代理不受影響。builder 本身也設定在獨立的 worktree 工作。
+
 實測發現單靠文字指示,agent 在小 repo 上常會跳過 review;加上這個閘門後,review 才穩定執行,而且在測試中抓到了真的捨入 bug。
 
 ### 和 pstack 並存
@@ -111,12 +119,12 @@ pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用�
 /plumb:setup
 ```
 
-agent 會先讀 repo(git remote、`package.json` 等設定檔、CI、`GLOSSARY.md`),再提出一份草稿讓你確認,內容包括:
+agent 會先讀 repo(git remote、`package.json` 等設定檔、CI、詞彙表,不論叫 `GLOSSARY.md`、`CONTEXT.md` 或其他名稱),再提出一份草稿讓你確認,內容包括:
 
 - **Tracker**:ticket 放哪裡。可以是 GitHub、GitLab,或本機的 `.plumb/<功能名>/tickets/`。
 - **Checks**:typecheck、lint、單一測試檔、完整測試的指令。
 - **Run surface**:怎麼啟動 app、怎麼操作它來驗證。
-- **Domain docs**:`GLOSSARY.md` 和 ADR 放哪裡。
+- **Domain docs**:詞彙表的實際路徑(例如 `GLOSSARY.md` 或 `CONTEXT.md`)和 ADR 放哪裡。
 
 確認後會寫出 `docs/agents/plumb.md`,並在 `CLAUDE.md` 或 `AGENTS.md` 加一行指向它。之後可以直接手改這個檔案。
 
@@ -141,7 +149,7 @@ lane: Bug · rigor: Light (S, two-way) · why: 只改 cart.js 的加總邏輯
 | 「列表用卡片還是表格比較好?做出來看看」 | Prototype | 在暫存位置做 2 到 4 個可切換的版本,截圖比較,給建議 |
 | 「這個 retry 機制是怎麼運作的?」 | Investigate | 只讀不改,回答時附上檔案和行號 |
 
-如果分類不對,直接糾正就好,例如「這是單向門,用 Strict」或「這很小,用 Light」。
+如果分類不對,直接糾正就好,例如「這是單向改動門,用 Strict」或「這很小,用 Light」。
 
 ### 3. agent 問你問題時
 
@@ -209,7 +217,8 @@ Epic 車道的流程:
 ## 檢查腳本
 
 ```bash
-node scripts/check-plugin.mjs        # frontmatter、連結、user-invoked 引用方式、路由清單是否完整、禁止長破折號
+node scripts/check-plugin.mjs        # frontmatter、連結、user-invoked 引用方式、路由清單、禁止長破折號、詞彙表檔名寫死、只看 commit 的 review diff
+node scripts/review-diff.mjs <ref>   # review 要看的完整 diff:commit、未 commit 的修改、新檔案
 node scripts/check-tickets.mjs <dir> # ticket 編號、依賴、狀態、Acceptance 與 Proof
 node scripts/check-tickets.mjs <dir> --frontier   # 列出現在可以開工的 tickets
 node --test scripts/test/*.test.mjs# 腳本本身的測試

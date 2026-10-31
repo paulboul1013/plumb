@@ -5,6 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { checkTickets } from '../check-tickets.mjs';
 import { checkPlugin } from '../check-plugin.mjs';
+import { reviewDiff } from '../review-diff.mjs';
+import { blockReason } from '../../hooks/builder-git-guard.mjs';
+import { execFileSync } from 'node:child_process';
 
 const root = new URL('../..', import.meta.url).pathname;
 
@@ -68,4 +71,56 @@ test('the plugin check catches a long dash, a bare user-invoked reference, and a
   assert.ok(errors.some((e) => e.startsWith('skills/tdd/SKILL.md:') && e.includes('long dash')));
   assert.ok(errors.some((e) => e.includes('`retro` is user-invoked')));
   assert.ok(errors.includes(`skills/plumb/SKILL.md: router's Skills list does not mention "ghost"`));
+});
+
+test('the plugin check catches a hard-coded GLOSSARY.md and a commits-only review diff', () => {
+  const dir = pluginCopy();
+  const builder = join(dir, 'agents/plumb-builder.md');
+  // The line the glossary fix missed in agents/plumb-builder.md.
+  writeFileSync(builder, readFileSync(builder, 'utf8') + '\nRead the ticket, the design sketch, `GLOSSARY.md`, and `docs/agents/plumb.md`.\n');
+  const review = join(dir, 'skills/review/SKILL.md');
+  // The review step that handed reviewers an empty diff for uncommitted work.
+  writeFileSync(review, readFileSync(review, 'utf8') + '\nConfirm that `git diff <ref>...HEAD` is not empty.\n');
+  const errors = checkPlugin(dir);
+  assert.ok(errors.some((e) => e.startsWith('agents/plumb-builder.md:') && e.includes('hard-coded GLOSSARY.md')));
+  assert.ok(errors.some((e) => e.startsWith('skills/review/SKILL.md:') && e.includes('review-diff.mjs')));
+});
+
+function repoWithUncommittedWork() {
+  const dir = mkdtempSync(join(tmpdir(), 'repo-'));
+  const g = (...args) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], { cwd: dir, encoding: 'utf8' });
+  g('init', '-q', '-b', 'main');
+  writeFileSync(join(dir, 'kept.txt'), 'base\n');
+  g('add', '.'); g('commit', '-q', '-m', 'base');
+  g('checkout', '-q', '-b', 'feature');
+  writeFileSync(join(dir, 'kept.txt'), 'base\nedited, not committed\n');
+  writeFileSync(join(dir, 'new.txt'), 'brand new file\n');
+  return { dir, g };
+}
+
+test('review-diff includes uncommitted edits and untracked files that ...HEAD misses', () => {
+  const { dir, g } = repoWithUncommittedWork();
+  assert.equal(g('diff', 'main...HEAD'), '');
+  const diff = reviewDiff('main', { cwd: dir });
+  assert.match(diff, /\+edited, not committed/);
+  assert.match(diff, /\+brand new file/);
+  assert.deepEqual(reviewDiff('main', { cwd: dir, filesOnly: true }).trim().split('\n').sort(), ['kept.txt', 'new.txt']);
+});
+
+test('review-diff fails on a bad ref and on an empty change', () => {
+  const { dir, g } = repoWithUncommittedWork();
+  assert.throws(() => reviewDiff('no-such-ref', { cwd: dir }), /is not a commit/);
+  g('checkout', '-q', '--', 'kept.txt');
+  execFileSync('rm', [join(dir, 'new.txt')]);
+  assert.throws(() => reviewDiff('main', { cwd: dir }), /nothing to review/);
+});
+
+test('the builder guard blocks the git stash a plumb-builder ran, and nothing else', () => {
+  const call = (command, agentType) => blockReason({ agent_type: agentType, agent_id: agentType && 'a1', tool_name: 'Bash', tool_input: { command } });
+  // The command the builder ran on the shared checkout.
+  assert.match(call('git stash && npm run mocha; git stash pop', 'plumb:plumb-builder'), /git worktree add/);
+  for (const c of ['git reset --hard HEAD', 'git checkout -- public/js/cover.js', 'git restore .', 'git clean -fd']) assert.ok(call(c, 'plumb:plumb-builder'), c);
+  for (const c of ['git status', 'git diff HEAD', 'git checkout -b feature', 'git commit -m x']) assert.equal(call(c, 'plumb:plumb-builder'), null, c);
+  assert.equal(call('git stash', undefined), null);
+  assert.equal(call('git stash', 'plumb:plumb-reviewer'), null);
 });

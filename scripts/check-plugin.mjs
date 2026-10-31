@@ -34,11 +34,20 @@ export function checkPlugin(root) {
   const markdown = [...walk(join(root, 'skills')), ...walk(join(root, 'agents')), ...walk(join(root, 'hooks')), join(root, 'README.md')]
     .filter((p) => p.endsWith('.md') && existsSync(p));
 
+  // Only these files describe how the glossary is found; everything else says "the glossary".
+  const glossaryFinders = new Set(['skills/plumb/SKILL.md', 'skills/domain/SKILL.md', 'skills/domain/GLOSSARY-FORMAT.md', 'skills/setup/SKILL.md', 'README.md']);
+
   for (const file of markdown) {
     const text = readFileSync(file, 'utf8');
     const prose = text.replace(/^```[\s\S]*?^```/gm, '');
     text.split('\n').forEach((line, i) => {
       if (line.includes('—')) errors.push(`${rel(file)}:${i + 1}: long dash; rewrite the sentence with a period, comma, or colon`);
+      if (/\.\.\.HEAD\b/.test(line) && !/review-diff|commits only|misses uncommitted/.test(line)) {
+        errors.push(`${rel(file)}:${i + 1}: \`...HEAD\` diff misses uncommitted and untracked work; use \`node "\${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <ref>\``);
+      }
+      if (line.includes('GLOSSARY.md') && !glossaryFinders.has(rel(file))) {
+        errors.push(`${rel(file)}:${i + 1}: hard-coded GLOSSARY.md; write "the glossary", which the plumb router resolves to the repo's real file (GLOSSARY.md, CONTEXT.md, ...)`);
+      }
     });
     for (const [, target] of prose.matchAll(/\]\(([^)#\s]+)(?:#[^)]*)?\)/g)) {
       if (/^[a-z]+:/.test(target)) continue;
