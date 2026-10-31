@@ -87,6 +87,16 @@ test('the plugin check catches a hard-coded GLOSSARY.md and a commits-only revie
   assert.ok(errors.some((e) => e.startsWith('skills/review/SKILL.md:') && e.includes('review-diff.mjs')));
 });
 
+test('the plugin check reads a link destination written in angle brackets as the path inside them', () => {
+  const dir = pluginCopy();
+  const tdd = join(dir, 'skills/tdd/SKILL.md');
+  mkdirSync(join(dir, 'skills/tdd/my notes'));
+  writeFileSync(join(dir, 'skills/tdd/my notes/seams.md'), '# Seams\n');
+  writeFileSync(tdd, readFileSync(tdd, 'utf8') + '\nSee [the bug lane](<../plumb/lanes/bug.md>), [the seams](<my notes/seams.md#top>), and [old notes](<old notes/gone.md>).\n');
+  const links = checkPlugin(dir).filter((e) => e.startsWith('skills/tdd/') && e.includes('broken link'));
+  assert.deepEqual(links, ['skills/tdd/SKILL.md: broken link old notes/gone.md']);
+});
+
 function repoWithUncommittedWork() {
   const dir = mkdtempSync(join(tmpdir(), 'repo-'));
   const g = (...args) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...args], { cwd: dir, encoding: 'utf8' });

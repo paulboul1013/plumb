@@ -49,7 +49,9 @@ export function checkPlugin(root) {
         errors.push(`${rel(file)}:${i + 1}: hard-coded GLOSSARY.md; write "the glossary", which the plumb router resolves to the repo's real file (GLOSSARY.md, CONTEXT.md, ...)`);
       }
     });
-    for (const [, target] of prose.matchAll(/\]\(([^)#\s]+)(?:#[^)]*)?\)/g)) {
+    // A destination in angle brackets, as in `[x](<my notes.md>)`, may hold spaces; the brackets are not part of the path.
+    for (const [, bracketed, bare] of prose.matchAll(/\]\((?:<([^>#]+)(?:#[^>]*)?>|([^)#\s]+)(?:#[^)]*)?)\)/g)) {
+      const target = bracketed ?? bare;
       if (/^[a-z]+:/.test(target)) continue;
       if (!existsSync(resolve(dirname(file), target))) errors.push(`${rel(file)}: broken link ${target}`);
     }
