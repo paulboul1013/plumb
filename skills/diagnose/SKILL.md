@@ -21,6 +21,8 @@ This is the skill. With a tight signal that goes red on this bug, the cause will
 8. A `git bisect run` harness when the bug appeared between two known states.
 9. A differential run of the same input through old and new versions.
 
+A comparison (items 3 and 9) proves nothing until it has failed on purpose. Seed one known-bad change for each output it claims to compare, such as one wrong total and, separately, swapped items that keep the same total, and confirm it reports each one. Missing or unread input must make it refuse or say inconclusive, never match. Keep these controls beside the loop and rerun them before you trust a match.
+
 Reproduce it yourself on the surface where the user saw it. Ask the user only for access you cannot get, and only after you went as far as you can.
 
 **Done when** you can name one command, already run and shown, that is red-capable (it asserts the user's exact symptom), deterministic, fast, and runs without a human. For a flaky bug, raise the repro rate (loop it, add load, narrow timing) until it is high enough to debug.
