@@ -132,3 +132,4 @@ User-invoked. Only the user types these.
 - `/plumb:retro`: turn the session's mistakes into checks and standards.
 - `/plumb:handoff`: write a handoff file for another session or person.
 - `/plumb:sharpen`: make a task deeper, not bigger, and rewrite its prompt.
+- `/plumb:ketchup`: catch the user up since their last message and list what waits on them.

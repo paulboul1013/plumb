@@ -73,7 +73,7 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
 
 模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`。
 
-只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`。
+只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`、`/plumb:ketchup`。
 
 Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(唯讀,一次只看一個 review 軸)。
 
@@ -198,6 +198,7 @@ Epic 車道的流程:
 | `/plumb:retro` | 回顧這個 session,把犯過的錯變成 lint、測試或規範 | 做完一件事之後,尤其是過程不順的時候 |
 | `/plumb:handoff` | 寫一份交接檔,讓另一個 session 或別人接手 | 換目錄、換工具、交給別人、或要暫停很久 |
 | `/plumb:sharpen` | 用四個問題(專家會多做什麼、最原始的材料、方法、外部檢驗)把任務做深,改寫成更好的 prompt,不動手做 | 開工前覺得需求太淺、太籠統,想先拉高標準再交給 `/plumb:plumb` |
+| `/plumb:ketchup` | 從你最後一則訊息開始,用白話補上發生了什麼,列出每個等你決定的事(附建議、依據、風險)。只讀不改 | 離開一陣子回來、plumb 在背景跑很久,想知道現在怎樣、有什麼要你決定 |
 
 ### 7. 手動呼叫單一 skill
 
