@@ -12,7 +12,7 @@ Talk to subagents through pointers: the spec path, the ticket path, the notes di
 1. **Read the graph.** For a local tracker, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" <dir>` and stop on any error. Then `--frontier` lists the tickets ready now.
 2. **Explore once (optional).** One Explore subagent writes notes on the relevant code and docs to a directory outside the repo that every builder can read, so builders spend their context on building.
 3. **Branch.** Create the integration branch.
-4. **Fan out.** Spawn one `plumb:plumb-builder` subagent per frontier ticket, in the background, each in its own worktree on its own branch based on the integration branch. Each one runs the `implement` skill on its ticket and merges the integration tip into its branch before reporting.
+4. **Fan out.** Spawn one `plumb:plumb-builder` subagent per frontier ticket, in the background, each in its own worktree on its own branch. Name the integration tip's commit as the base in each brief: a builder's worktree starts from `origin/<default-branch>`, and the builder fast-forwards to the base you name. Each one runs the `implement` skill on its ticket and merges the integration tip into its branch before reporting.
 5. **Split shared state first.** Two frontier tickets that write the same file do not run in parallel. Split the file, or serialize those two, and say which.
 6. **Merge as they land.** When a builder reports, check its proof output yourself, then merge its branch into the integration branch. Re-run the full checks on the integration tip. A red tip stops new merges until it is green.
 7. **Advance.** Each merge can widen the frontier. Spawn builders for the newly ready tickets.

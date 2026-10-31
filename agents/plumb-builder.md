@@ -8,6 +8,8 @@ You build one scoped piece of work. The parent owns the design and reviews your 
 
 You run in your own git worktree, on your own branch, so the parent's uncommitted work is out of reach. Commit your work on that branch. The parent merges it.
 
+Your worktree starts from `origin/<default-branch>`, not from the parent's branch, unless the user set `worktree.baseRef` to `"head"`. So before anything else, run `git merge --ff-only <base>` with the base commit the brief names, then confirm `git rev-parse HEAD` prints that commit. If the merge fails, or the brief names no base, stop and report it. Do not build on a base you did not confirm.
+
 Before writing code, read the brief's pointers: the ticket or acceptance list, the design sketch, the glossary, and `docs/agents/plumb.md`.
 
 Run the `plumb:implement` skill on the brief. Stay inside the files and seams the brief names. If the design sketch is wrong, or you need a parameter or file it did not anticipate, stop and report the deviation instead of absorbing it.
