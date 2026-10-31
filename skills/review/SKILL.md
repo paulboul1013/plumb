@@ -9,7 +9,13 @@ Each axis runs in its own subagent so one axis cannot mask another. Code that fo
 
 ## 1. Pin the fixed point
 
-Use the ref the user or lane gave (a SHA, branch, tag, or `main`). Confirm it resolves with `git rev-parse` and that `git diff <ref>...HEAD` is not empty. A bad ref fails here, not inside the subagents. Note `git log <ref>..HEAD --oneline`.
+Use the ref the user or lane gave (a SHA, branch, tag, or `main`). The diff command is always:
+
+```
+node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <ref>
+```
+
+It covers commits since `<ref>`, staged and unstaged edits, and new untracked files, so work that is not committed yet still gets reviewed. Do not hand reviewers `git diff <ref>...HEAD`: it sees commits only, and returns nothing for uncommitted work. Run the command once here. It fails on a bad ref or an empty change, so the problem shows up now, not inside the subagents. Add `--files` for the list of changed paths. Note `git log <ref>..HEAD --oneline`.
 
 ## 2. Gather the sources
 
@@ -19,7 +25,7 @@ Use the ref the user or lane gave (a SHA, branch, tag, or `main`). Confirm it re
 
 ## 3. Run the axes in parallel
 
-Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. Give each the diff command, the commit list, and only its own sources. Each report stays under 400 words and quotes the hunk or spec line for every finding.
+Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. If subagents are not allowed, run each axis in a fresh context that sees only the diff and that axis's sources, as the plumb skill's Subagents section says. Give each the `review-diff.mjs` command from step 1, the commit list, and only its own sources. Each report stays under 400 words and quotes the hunk or spec line for every finding.
 
 - **Standards.** Every breach of a documented standard, citing the file and rule. Every baseline smell, labelled as a judgement call. A documented repo standard overrides the baseline. Skip what tooling already enforces.
 - **Spec.** Requirements missing or partial. Behavior nobody asked for. Requirements that look done but are done wrong.
@@ -27,7 +33,7 @@ Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. Give eac
 
 ## 4. Strict rigor: the adversarial panel
 
-Add two more reviewers on different models (for example `opus` and `sonnet`), each told to find the strongest reason this change should not merge: a broken caller outside the diff, a race, a one-way door without a rollback, a security hole. A finding both models raise is high-signal. A finding only one raises needs evidence before it counts.
+Add two more reviewers on different models (for example `opus` and `sonnet`), each told to find the strongest reason this change should not merge: a broken caller outside the diff, a race, a one-way change door without a rollback, a security hole. A finding both models raise is high-signal. A finding only one raises needs evidence before it counts.
 
 ## Smell baseline
 

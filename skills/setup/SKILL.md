@@ -14,8 +14,8 @@ Read what exists. Do not assume.
 
 - `git remote -v`: GitHub, GitLab, or none.
 - `CLAUDE.md`, `AGENTS.md`, and any existing `## Agent skills` block.
-- `GLOSSARY.md`, `GLOSSARY-MAP.md`, `docs/adr/`. Monorepo signals such as workspaces or `packages/*`.
-- The check commands: `package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, the CI workflow. Find typecheck, lint, the single-file test, and the full suite. Run each once to confirm it works.
+- The glossary under any name: `GLOSSARY.md`, `GLOSSARY-MAP.md`, `CONTEXT.md`, `docs/glossary*`. Also `docs/adr/`, and monorepo signals such as workspaces or `packages/*`.
+- The check commands: `package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, the CI workflow. Find typecheck, lint, the single-file test, and the full suite. The full suite is what CI runs. Run each once to confirm it works.
 - How the app runs: the dev server command, the port, the CLI entry point, an existing project verify skill.
 
 ## 2. Propose
@@ -43,7 +43,9 @@ Ready label: <ready-for-agent>
 
 ## Domain docs
 
-<single context: GLOSSARY.md and docs/adr/ at the root | multi-context: GLOSSARY-MAP.md>
+Glossary: `<path, such as GLOSSARY.md or CONTEXT.md>`
+ADRs: `<docs/adr/ or none>`
+Layout: <single context | multi-context via GLOSSARY-MAP.md>
 ```
 
 ## 3. Write

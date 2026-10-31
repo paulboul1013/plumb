@@ -54,7 +54,7 @@ _Avoid_: Client, buyer, account
 The skill infers which structure applies:
 
 - If `GLOSSARY-MAP.md` exists, read it to find contexts
-- If only a root `GLOSSARY.md` exists, single context
-- If neither exists, create a root `GLOSSARY.md` lazily when the first term is resolved
+- If a root `GLOSSARY.md` exists, or another file already holds the domain terms (such as `CONTEXT.md` or `docs/glossary.md`), single context: keep using that file and its name
+- If none exists, create a root `GLOSSARY.md` lazily when the first term is resolved
 
 When multiple contexts exist, infer which one the current topic relates to. If unclear, ask.

@@ -5,7 +5,7 @@ description: Test-driven development as a red-green loop at agreed seams, one ve
 
 # TDD
 
-Red, then green, one slice at a time. Read `GLOSSARY.md` so test names use the domain's words.
+Red, then green, one slice at a time. Read the glossary so test names use the domain's words.
 
 ## Test only at agreed seams
 

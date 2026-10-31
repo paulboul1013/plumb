@@ -31,7 +31,7 @@ A numbered list. Each item is an observable behavior a test or a live run can ch
 - The data shape and its organizing structure.
 - The modules built or changed, and their interfaces.
 - The seams under test, with what each catches.
-- Schema, API, or format changes. Mark each one-way door.
+- Schema, API, or format changes. Mark each design door and each one-way change door.
 
 No file paths or code, since they go stale. The exception is a prototype snippet that pins a decision better than prose, such as a state machine or a type. Trim it to the decision and say it came from a prototype.
 

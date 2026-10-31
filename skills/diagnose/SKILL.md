@@ -5,7 +5,7 @@ description: Diagnose a hard bug or performance regression by first building one
 
 # Diagnose
 
-Read `GLOSSARY.md` and the ADRs in the area. Redact every secret in what you show. Write `<REDACTED>` in its place.
+Read the glossary and the ADRs in the area. Redact every secret in what you show. Write `<REDACTED>` in its place.
 
 ## 1. Build the feedback loop
 

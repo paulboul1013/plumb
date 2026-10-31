@@ -25,6 +25,16 @@ The **frontier** is every open decision whose prerequisites are settled. Ask the
 Recommended: <your answer, and the reason in one sentence>
 ```
 
+If the session has an interactive question tool, such as `AskUserQuestion`, ask each round through it so the user picks instead of typing question numbers and answers:
+
+- One question per decision, with a short header.
+- Two to four options. Put the recommended option first and add "(Recommended)" to its label.
+- Each option's description says what happens if the user picks it.
+- Use multi-select only when the options do not exclude each other, such as a list of features to include.
+- Respect the tool's limit per call. Split a larger frontier over several calls, prerequisites first.
+
+Fall back to the numbered text format above only when no such tool exists.
+
 After each round, recompute the frontier and ask the next one.
 
 ## Depth by rigor

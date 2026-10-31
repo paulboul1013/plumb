@@ -21,7 +21,7 @@ Break the work into **tracer bullets**: thin slices that each cut through every 
 
 1. Read the spec and the code it touches. Use the glossary's terms.
 2. Draft the slices with their blockers.
-3. Show the user a numbered list: title, blocked by, and what it delivers. Ask whether the granularity is right, whether each blocker truly gates its ticket, and whether any should merge or split. Iterate until approved. If the user is away, publish your draft and record that with `trail`.
+3. Show the user a numbered list: title, blocked by, and what it delivers. Ask through the interactive question tool when the session has one, as `align` does. Ask whether the granularity is right, whether each blocker truly gates its ticket, and whether any should merge or split. Iterate until approved. If the user is away, publish your draft and record that with `trail`.
 4. Publish.
 
 ## Local tracker

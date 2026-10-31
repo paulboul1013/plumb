@@ -29,7 +29,9 @@ Write the body in the glossary's language. No preamble.
 
 ## Merge danger
 
-**Door:** <one-way or two-way>. <why, in one sentence>
+**Change door:** <one-way or two-way>. <why, in one sentence>
+
+**Design door:** <none, or the shape that is hard to change later>
 
 **Blast radius:** <who or what this touches, and why that is safe or risky>
 
@@ -38,6 +40,6 @@ Write the body in the glossary's language. No preamble.
 <what this leaves out on purpose>
 ```
 
-For a bug, the Summary names the hypothesis that turned out true. For a one-way door, the Merge danger section names the rollback.
+For a bug, the Summary names the hypothesis that turned out true. For a one-way change door, the Merge danger section names the rollback.
 
 Opening a PR does not mean watching it. Post the link and carry on. Never merge without the user's go.

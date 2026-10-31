@@ -27,9 +27,12 @@ Read `docs/agents/plumb.md` for how to drive the app. Otherwise pick by what cha
 
 ## By rigor
 
+At every rigor, an action door runs on a copy. Delete, deploy, or send only things you created for the proof. Touching anything else is an irreversible action, so stop and ask first.
+
+
 - **Light.** One run on the closest surface.
 - **Standard.** Every acceptance item checked on the real surface.
-- **Strict.** Standard, plus the same scenario on the base branch to show the difference, plus every one-way door exercised on a copy first.
+- **Strict.** Standard, plus the same scenario on the base branch to show the difference, plus every one-way change door exercised on a copy first.
 
 ## Output
 
