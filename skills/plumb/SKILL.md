@@ -131,3 +131,4 @@ User-invoked. Only the user types these.
 - `/plumb:setup`: configure tracker, checks, and the run surface for this repo.
 - `/plumb:retro`: turn the session's mistakes into checks and standards.
 - `/plumb:handoff`: write a handoff file for another session or person.
+- `/plumb:sharpen`: make a task deeper, not bigger, and rewrite its prompt.
