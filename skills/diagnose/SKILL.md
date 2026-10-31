@@ -35,16 +35,16 @@ Confirm the loop shows the user's failure, not a nearby one. Then cut inputs, st
 
 ## 3. Hypothesise
 
-Write three to five ranked hypotheses, each falsifiable: "If X is the cause, changing Y makes it disappear." A hypothesis without a prediction is a guess. Discard it or sharpen it. Show the list to the user if they are around, since they may rule some out at once. Do not wait for them.
+Write three to five ranked hypotheses, each falsifiable: "If X is the cause, changing Y makes it disappear." A hypothesis without a prediction is a guess. Discard it or sharpen it. When something fails only after a restart, rank stale persisted state first: config files, caches, lock files, serialized state. Show the list to the user if they are around, since they may rule some out at once. Do not wait for them.
 
 ## 4. Instrument and cut
 
 Test the hypothesis that splits the remaining space most. Change one variable at a time. Prefer a debugger, then targeted logs at the boundaries that tell hypotheses apart. Tag every debug log with one prefix, such as `[DEBUG-a4f2]`. For performance, measure a baseline first, then bisect. When evidence refutes a hypothesis, revert what it motivated.
 
-When two fixes in a row fail on the same assumption, stop. Write the assumption down and find an observation that could prove it false before the next fix.
+When two fixes in a row fail on the same assumption, stop. Write the assumption down as one sentence and find an observation that would come out differently if it were false, before the next fix. Look at how the failures are spread (which inputs, hosts, users, or timings), not only how large they are. If the evidence refutes the assumption, look for what the failures share that it did not predict. If it confirms the assumption, ask the next why: the earlier fixes may have treated a consequence. Remove the condition that causes the failure instead of adding a mechanism that cleans up after it.
 
 ## 5. Hand back
 
-Return to the Bug lane with the loop command, the minimised repro, the surviving hypothesis and its evidence, and the seam for the regression test, or the finding that no correct seam exists.
+Return to the Bug lane with the loop command, the minimised repro, the surviving hypothesis and its evidence, and the seam for the regression test, or the finding that no correct seam exists. Add every other place with the same fault, so the fix covers the pattern, not the one instance. If the deciding fact took a deep dig to find, propose the cheap, always-on signal (a log line, a metric, an assertion) that would have shown it at first look.
 
 Before declaring done, remove every tagged log (`grep` the prefix) and delete or clearly mark the throwaway harnesses.
