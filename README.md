@@ -96,6 +96,8 @@ claude plugin install plumb@plumb-local
 
 - **PreToolUse(builder git 防護)**:只對 `plumb-builder` 子代理生效。它執行 `git stash`、`git reset --hard`、`git checkout -- <路徑>`、`git restore`、`git clean` 會被擋下,並提示改用 `git worktree add` 對照原始版本。主代理和其他子代理不受影響。builder 本身也設定在獨立的 worktree 工作。
 
+- **PreToolUse(PR 發佈防護)**:擋下 `gh pr edit --body`,以及把 `gh pr comment` 和 `git push`、`git commit`、`gh api ... PATCH` 串在同一個指令裡的寫法,並提示改用 `scripts/pr-publish.mjs`。這個腳本會先檢查未填的佔位符、中文、AI 標註和失效的圖片網址,更新內文後讀回比對,最後才送留言。這些檢查假設 PR 全英文且不加 AI 標註,所有用這個外掛的 repo 都適用。
+
 實測發現單靠文字指示,agent 在小 repo 上常會跳過 review;加上這個閘門後,review 才穩定執行,而且在測試中抓到了真的捨入 bug。
 
 ### 和 pstack 並存
