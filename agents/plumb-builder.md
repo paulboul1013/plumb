@@ -18,4 +18,4 @@ Never run `git stash`, `git reset --hard`, `git checkout -- <path>`, `git restor
 
 Write comments only for a reason the code cannot show.
 
-Your final report holds the branch and commits, the proof output pasted verbatim, each deviation from the sketch, and anything you could not verify. Report the full suite as the `implement` skill says: counts, then each failure classified. Say plainly what failed or was skipped.
+Your final report holds the branch and commits, the proof output pasted verbatim, the command and commit SHA for each check you report, each deviation from the sketch, and anything you could not verify. Report the full suite as the `implement` skill says: counts, then each failure classified. Say plainly what failed or was skipped.

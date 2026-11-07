@@ -86,7 +86,7 @@ Use the session's task tool. If none exists, write a `todo.md` checklist outside
 
 Some steps hand work to subagents: `plumb:plumb-builder` writes the code at Standard and Strict, and `plumb:plumb-reviewer` runs each review axis. The point is separation: the agent that wrote the code does not judge it.
 
-When the user asks for plumb, that request covers the subagents its steps name. Do not ask again. If the environment or the user forbids subagents, do the step in the main session and keep the separation another way: write the code yourself, then run each review axis in a fresh context that sees only the diff and its sources, such as a new session. Say in the final reply which steps ran without a subagent and why.
+When the user asks for plumb, that request covers the subagents its steps name. Do not ask again. If the environment or the user forbids subagents, do the step in the main session and keep the separation another way: write the code yourself, then run each review axis in a fresh context that sees only the diff, its sources, and the rules in `${CLAUDE_PLUGIN_ROOT}/agents/plumb-reviewer.md`, such as a new session. Say in the final reply which steps ran without a subagent and why.
 
 ## 4. Decide who answers each question
 
@@ -102,7 +102,7 @@ Always stop and ask before an irreversible action: a force-push to a shared bran
 
 ## 5. Finish
 
-A task is done when `prove` has evidence from the real artifact and `review` has no open finding at the rigor's level. "It compiles" and "the tests pass" are not proof on their own. At Standard and Strict, `review` is not optional, however small the diff looks.
+A task is done when `prove` has evidence from the real artifact and `review` has no open finding at the rigor's level. "It compiles" and "the tests pass" are not proof on their own. At Standard and Strict, `review` is not optional, however small the diff looks. A fix made after a review is verified as the `review` skill's Verify fixes section says.
 
 Before the final reply, walk the todolist. Every lane step is done or carries `skip: <reason>`. A step skipped without a reason is not done, so go back and do it. Paste the walked list into the final reply, so the user can check it without opening a file.
 

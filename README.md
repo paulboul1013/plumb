@@ -75,7 +75,7 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
 
 只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`、`/plumb:ketchup`。
 
-Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(唯讀,一次只看一個 review 軸)、`thermo-nuclear-review-subagent` 和 `thermo-nuclear-code-quality-review-subagent`(由 `thermos` 派出)。
+Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(不改 repo,一次只看一個 review 軸,或驗證一次修正)、`thermo-nuclear-review-subagent` 和 `thermo-nuclear-code-quality-review-subagent`(由 `thermos` 派出)。
 
 ## 安裝
 
@@ -92,7 +92,7 @@ claude plugin install plumb@plumb-local
 ### Hooks
 
 - **SessionStart**:注入路由指令,讓 agent 在任何程式變更前先呼叫 `plumb` skill。
-- **Stop(完成閘門)**:只在已跑過 `/plumb:setup`(有 `docs/agents/plumb.md` 或 `.plumb/`)的 repo 生效。工作目錄有未 commit 的變更時,第一次停止會被擋下一次,要求 agent 補印車道與嚴謹度、確認每個步驟完成或寫明跳過理由,並在 Standard 或 Strict 時跑 `review`。同一個工作目錄狀態只擋一次,第二次停止一定放行,所以不會無限循環。
+- **Stop(完成閘門)**:只在已跑過 `/plumb:setup`(有 `docs/agents/plumb.md` 或 `.plumb/`)的 repo 生效。工作目錄有未 commit 的變更時,第一次停止會被擋下一次,要求 agent 補印車道與嚴謹度、確認每個步驟完成或寫明跳過理由,並在 Standard 或 Strict 時跑 `review`;如果這些變更是修正已 review 過的改動,就改照 `review` 的 Verify fixes 一節驗證。同一個工作目錄狀態只擋一次,第二次停止一定放行,所以不會無限循環。
 
 - **PreToolUse(builder git 防護)**:只對 `plumb-builder` 子代理生效。它執行 `git stash`、`git reset --hard`、`git checkout -- <路徑>`、`git restore`、`git clean` 會被擋下,並提示改用 `git worktree add` 對照原始版本。主代理和其他子代理不受影響。builder 本身也設定在獨立的 worktree 工作。
 

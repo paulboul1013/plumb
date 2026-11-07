@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Build one ticket or one feature test-first at the agreed seams, then prove and review it before committing. Use when a lane step says implement, or the user asks to implement a ticket or spec item.
+description: Build one ticket or one feature test-first at the agreed seams, then prove it and review it as far as the brief or lane sets, before committing. Use when a lane step says implement, or the user asks to implement a ticket or spec item.
 ---
 
 # Implement
@@ -16,7 +16,7 @@ If given a ticket reference, fetch it and state its title before starting. If th
 
    Report the counts, then each failure with its class and the command that showed it. Never edit, skip, or delete an unrelated test to turn the suite green.
 4. Run `prove` against the ticket's Proof line, or the acceptance list.
-5. Run `review` with the ticket or acceptance list as the spec. Fix each finding and prove again.
+5. Run `review` with the ticket or acceptance list as the spec, unless the brief or lane limits it. For a ticket from a spec's ticket graph, whichever lane runs this skill, run only the Spec axis, because the Epic reviews the whole integration branch. Say in your reply that this whole-branch review, with the other axes and any panel, is still owed, and how many tickets are left. Otherwise, when the brief says the parent reviews, or a lane with its own Review step runs this skill, do not run `review`, because that review runs once. Report as usual. Fix each finding and prove again. Skipping is the exception: any other `implement` request still runs `review` at the task's rigor.
 6. Commit to the current branch. Set a local ticket's status to `done`.
 
 When a parent agent delegated this to you, report the branch, the commits, the proof output, and any deviation from the design sketch. Do not babysit a PR unless the brief says so.

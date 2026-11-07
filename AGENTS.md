@@ -15,3 +15,6 @@ When a correction repeats, enforce it with a check, a script, or a hook, and add
 | Remove a builder worktree only after `scripts/worktree-check.mjs` prints `ok` for it. | `scripts/worktree-check.mjs`, called from `skills/orchestrate/SKILL.md` |
 | Ticket graphs: blockers numbered lower, every ticket has Acceptance and Proof. | `scripts/check-tickets.mjs` |
 | Classify each full-suite failure as yours, pre-existing, or flaky, with the command that showed it. | Docs only: `skills/implement/SKILL.md`. It is a judgment call that no script can make. |
+| Review runs once per change: a builder skips `review` when the brief or lane reviews it, and an Epic ticket runs only the Spec axis. | Docs only: `skills/implement/SKILL.md`, the Feature and Epic lanes, `skills/orchestrate/SKILL.md`. An agent applies it from its brief and lane, which no script can see. |
+| The parent records each check result, and reviewers reuse one recorded for HEAD, with a matching diff digest on a dirty tree, instead of rerunning it. | Docs only: `skills/review/SKILL.md`, `agents/plumb-reviewer.md`. A reviewer's rerun cannot be seen by a script. |
+| A fix's verification scales with its size: `review` again, one reviewer, or none when no behavior or instruction changes. | Docs only: `skills/review/SKILL.md`. Sizing a fix is a judgment call. |
