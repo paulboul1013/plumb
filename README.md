@@ -71,11 +71,11 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
 
 ## Skills
 
-模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)。
+模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)、`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review`(沒有車道會呼叫這六個)。
 
 只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`、`/plumb:ketchup`。
 
-Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(唯讀,一次只看一個 review 軸)。
+Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(唯讀,一次只看一個 review 軸)、`thermo-nuclear-review-subagent` 和 `thermo-nuclear-code-quality-review-subagent`(由 `thermos` 派出)。
 
 ## 安裝
 
@@ -107,7 +107,7 @@ pstack 的 SessionStart hook 會要求所有任務先走 `poteto-mode`,和 plumb
 - 關 pstack 的:在 `~/.claude/pstack-models.md` 把 `session hook: on` 改成 `session hook: off`。
 - 關 plumb 的:設定環境變數 `PLUMB_HOOK=off`。
 
-pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用。
+pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用。plumb 現在也有自己的 `arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 副本,放在 `plumb:` namespace 下,plumb 的 `review` 和車道都不會呼叫它們。
 
 完整的切換步驟(用 plumb、換回 pstack、兩邊都關)見 [docs/pstack-conflict.md](docs/pstack-conflict.md)。
 
@@ -213,6 +213,7 @@ Epic 車道的流程:
 - `/plumb:review`:review 目前分支,例如「review 從 main 到現在的變更」。
 - `/plumb:align`:只要被問問題、把想法釐清。
 - `/plumb:prove`:只驗證某個變更真的能用。
+- `/plumb:arena`、`/plumb:interrogate`、`/plumb:swarm`、`/plumb:thermos`、`/plumb:thermo-nuclear-review`、`/plumb:thermo-nuclear-code-quality-review`:平行候選、對抗式挑錯、平行 worker 和嚴格審查。沒有車道會呼叫它們,只有你要求或需求符合時才會跑。
 
 ### 8. 怎麼確認它有在運作
 
@@ -232,4 +233,4 @@ node --test scripts/test/*.test.mjs# 腳本本身的測試
 
 ## 授權與來源
 
-MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。
+MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 這六個 skill 和兩個 thermo subagent 移植自 pstack-claude 0.9.132。`arena`、`interrogate`、`swarm` 的著作權屬於 Lauren Tan,pstack-claude 的修改屬於 Michael Denyer;`thermos`、兩個 thermo-nuclear review skill 和兩個 subagent 的著作權屬於 Cursor(都是 MIT),授權全文在 [docs/licenses/](docs/licenses/)。

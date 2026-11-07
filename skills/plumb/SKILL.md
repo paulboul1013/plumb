@@ -127,6 +127,15 @@ Model-invoked. The lanes call these.
 - `trail`: a decision log for long or unattended work.
 - `help`: tell the user which lane, skill, or command fits, and how to steer a run. No lane calls it; it runs when the user asks how to use plumb or types `/plumb:help`.
 
+Also model-invoked. No lane calls these six. They run when the user asks for them or the request matches their description.
+
+- `arena`: run parallel candidates at the same task, pick a base, and graft the strongest parts of the rest.
+- `interrogate`: adversaries try to break a change or design, and only findings proven by a run survive.
+- `swarm`: fan out parallel workers, drain them, and return one report.
+- `thermos`: run both thermo-nuclear reviews in parallel and synthesize their findings.
+- `thermo-nuclear-review`: a security and correctness audit of a branch diff.
+- `thermo-nuclear-code-quality-review`: a strict maintainability audit of abstractions, giant files, and spaghetti growth.
+
 User-invoked. Only the user types these.
 
 - `/plumb:setup`: configure tracker, checks, and the run surface for this repo.
