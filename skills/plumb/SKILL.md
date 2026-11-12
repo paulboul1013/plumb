@@ -70,7 +70,7 @@ Re-classify when the evidence changes. A bug whose fix crosses three modules is 
 When plumb starts after work has begun, earlier choices are not settled just because they were made. Before the lane's first step, list every choice made so far and sort each one:
 
 - **A fact or an empirical result** already checked. Keep it, and cite the evidence.
-- **A decision the user made outside plumb.** Ask it again through `align`, with the earlier answer as the recommended option, so the user confirms it with plumb's later questions in view.
+- **A decision the user made outside plumb.** Ask it again through `align`, with the earlier answer as the recommended option, so the user confirms it with plumb's later questions in view. When the user wrote it down, in the request, a spec, or notes in the repo, list it as settled with its source in align's goal paragraph instead, so the last round's "Build this?" confirms it.
 - **A decision you made on your own**, such as a default, a scope cut, or a design choice. Ask it as well. It never had the user's yes.
 - **Code already written.** Treat it as a draft that the Design and Review steps may change.
 
@@ -78,7 +78,7 @@ Show the user the sorted list, then ask the decisions in one `align` round. Mark
 
 ## 3. Open the todolist
 
-Copy the lane's steps into the todolist verbatim before any task-specific item. A step you skip stays with `skip: <reason>`.
+Copy the lane's steps into the todolist verbatim before any task-specific item. A step you skip stays with `skip: <reason>`. A step you run in a lighter or different form than the lane and rigor say carries `adjusted: <what changed>, <why>`, for example `adjusted: deliver stopped at a local commit, the user asked for no PR` or `adjusted: the parent ran the full suite, not the builder`.
 
 Use the session's task tool. If none exists, write a `todo.md` checklist outside the repo, in the session's scratch or work directory, so it never lands in a commit. Give its full path in your reply so the user can open it. When a lane step finishes, say so in one line: the step, and what is next.
 
@@ -104,9 +104,9 @@ Always stop and ask before an irreversible action: a force-push to a shared bran
 
 A task is done when `prove` has evidence from the real artifact and `review` has no open finding at the rigor's level. "It compiles" and "the tests pass" are not proof on their own. At Standard and Strict, `review` is not optional, however small the diff looks. A fix made after a review is verified as the `review` skill's Verify fixes section says.
 
-Before the final reply, walk the todolist. Every lane step is done or carries `skip: <reason>`. A step skipped without a reason is not done, so go back and do it. Paste the walked list into the final reply, so the user can check it without opening a file.
+Before the final reply, walk the todolist. Every lane step is done, or carries `adjusted: <what changed>, <why>` or `skip: <reason>`. A step skipped or adjusted without a reason is not done, so go back and do it. Paste the walked list into the final reply, so the user can check it without opening a file. Never mark an adjusted step done: a reader takes done to mean the step ran as the lane says.
 
-Open the final reply with the classification line, then give a short account: what changed for the user of the code, what you chose and why, the proof (paste the output), and any decision still waiting on the user.
+Open the final reply with the classification line, then give a short account: what changed for the user of the code, what you chose and why, the proof (paste the output), each adjusted or skipped step that lowers confidence in the result, and any decision still waiting on the user.
 
 ## Skills
 

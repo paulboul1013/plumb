@@ -37,11 +37,15 @@ Fall back to the numbered text format above only when no such tool exists.
 
 After each round, recompute the frontier and ask the next one.
 
+## Ask decisions, never the process
+
+A round holds only decisions. Do not put the lane, its steps, the todolist, or which skills will run into a round, and do not ask the user to approve them. Running them is yours. When the request, a spec, or notes in the repo already settle a decision, state it as settled in the goal paragraph instead of asking it again.
+
 ## Depth by rigor
 
 - **Light.** One sentence restating the goal. Ask only if the restatement could be wrong in a way that changes the code.
 - **Standard.** Only the decisions the change actually forks on.
-- **Strict.** The whole tree. Call the `domain` skill alongside, so each term and hard decision is written down as it settles.
+- **Strict.** The whole tree. A branch the request, a spec, or notes in the repo already settle counts as visited when the goal paragraph states it with its source. Call the `domain` skill alongside, so each term and hard decision is written down as it settles.
 
 ## When the user is away
 
@@ -49,4 +53,4 @@ If the user said to run unattended, take each recommended answer, record it with
 
 ## Done
 
-The frontier is empty: every branch visited, nothing silently assumed. Write the result as a goal paragraph, a numbered acceptance list, and an out-of-scope list. Confirm it with the user before building, unless they are away.
+The frontier is empty: every branch visited, nothing silently assumed. Write the result as a goal paragraph, a numbered acceptance list, and an out-of-scope list. Confirm it with the user before building, unless they are away. Make the confirmation a question in the last round, not a round of its own: show the three parts with that round's questions, and ask "Build this?" with yes as the recommended answer. When the request already settles every decision, that question is the only round. When the lane also needs the user's yes on the seams, ask it in that same round, as the `design` skill says.

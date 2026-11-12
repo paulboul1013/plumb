@@ -35,4 +35,4 @@ During implementation, throw the sketch away when the same workaround shows up i
 
 ## Output
 
-The usage sketch, the types and signatures, the seams with their one-line notes, and the rejected shapes. Show the seams to the user at Standard and Strict and get a yes before tests are written.
+The usage sketch, the types and signatures, the seams with their one-line notes, and the rejected shapes. Show the seams to the user at Standard and Strict and get a yes before tests are written. Ask it in `align`'s last round when the seams are clear by then, so the user confirms the plan once. Otherwise ask it as one question, with the seams as the recommended answer.
