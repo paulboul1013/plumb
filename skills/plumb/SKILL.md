@@ -80,7 +80,7 @@ Show the user the sorted list, then ask the decisions in one `align` round. Mark
 
 Copy the lane's steps into the todolist verbatim before any task-specific item. A step you skip stays with `skip: <reason>`. A step you run in a lighter or different form than the lane and rigor say carries `adjusted: <what changed>, <why>`, for example `adjusted: deliver stopped at a local commit, the user asked for no PR` or `adjusted: the parent ran the full suite, not the builder`.
 
-Use the session's task tool. If none exists, write a `todo.md` checklist outside the repo, in the session's scratch or work directory, so it never lands in a commit. Give its full path in your reply so the user can open it. When a lane step finishes, say so in one line: the step, and what is next.
+Use the session's task tool. If none exists, write a `todo.md` checklist outside the repo, in the session's scratch or work directory, so it never lands in a commit. Give its full path in your reply so the user can open it. When a lane step finishes, say so in one line: the step, and what is next. Show the lane steps as a checklist only in the final reply, because the reply check reads any such checklist as the walked list.
 
 ### Subagents
 

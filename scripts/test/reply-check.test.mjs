@@ -4,11 +4,12 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { classification, laneSteps, problems, replyText, stepStatuses, toolUses } from '../../hooks/reply-check.mjs';
+import { classification, laneEvidence, laneSteps, problems, replyText, stepStatuses, taskEntries, toolUses } from '../../hooks/reply-check.mjs';
 
 const root = new URL('../..', import.meta.url).pathname;
 const hook = join(root, 'hooks/reply-check.mjs');
 const steps = laneSteps(root);
+const evidence = laneEvidence(root);
 
 const user = (text) => ({ type: 'user', message: { role: 'user', content: text } });
 const toolResult = () => ({ type: 'user', message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 't', content: 'ok' }] } });
@@ -21,7 +22,8 @@ const allFeature = (overrides = {}) => steps.Feature.map((s) => overrides[s] ?? 
 const check = (entries) => {
   const c = classification(entries);
   if (!c) return [];
-  return problems({ text: replyText(entries), lane: c.lane, rigor: c.rigor, steps: steps[c.lane] ?? [], toolUses: toolUses(entries) });
+  const s = steps[c.lane] ?? [];
+  return problems({ text: replyText(entries), lane: c.lane, rigor: c.rigor, steps: s, evidence: evidence[c.lane], toolUses: toolUses(taskEntries(entries, s)) });
 };
 
 test('laneSteps reads every lane file, with multi-word steps', () => {
@@ -83,6 +85,38 @@ test('stepStatuses reads markers and reasons', () => {
   assert.equal(stepStatuses('- [x] Builder ran', ['Build']).Build.status, 'missing');
 });
 
+test('laneEvidence reads the builder and reviewer steps from the lane text', () => {
+  assert.deepEqual(evidence.Feature, { Build: 'plumb-builder', Review: 'plumb-reviewer' });
+  assert.deepEqual(evidence.Bug, { Review: 'plumb-reviewer' });
+  assert.deepEqual(evidence.Refactor, { 'Review and deliver': 'plumb-reviewer' });
+  assert.deepEqual(evidence.Epic, { 'Review the whole': 'plumb-reviewer' });
+});
+
+test('a Refactor at Strict that reports Review and deliver done with no reviewer is a problem', () => {
+  const lines = steps.Refactor.map((s) => `- [x] ${s}`).join('\n');
+  const found = check([user('go'), say(`lane: Refactor · rigor: Strict · why: x\n\n${lines}`)]);
+  assert.equal(found.length, 1, found.join('\n'));
+  assert.match(found[0], /Review and deliver.*plumb-reviewer/);
+});
+
+test('subagents spawned for an earlier task in the session do not back this one', () => {
+  const entries = [
+    user('task 1'), spawn('plumb:plumb-builder'), toolResult(), spawn('plumb:plumb-reviewer'), toolResult(),
+    say(featureReply('Strict', allFeature())),
+    user('task 2'), say(featureReply('Strict', allFeature())),
+  ];
+  const found = check(entries);
+  assert.ok(found.some((p) => /Build/.test(p)) && found.some((p) => /Review/.test(p)), found.join('\n'));
+  const sameTask = [user('task 1'), spawn('plumb:plumb-builder'), toolResult(), user('a hand-back'), spawn('plumb:plumb-reviewer'), toolResult(),
+    say(featureReply('Strict', allFeature()))];
+  assert.deepEqual(check(sameTask), []);
+  // A stop the finish gate blocked, then the same reply rewritten: the spawns before the block still count.
+  const feedback = { type: 'user', isMeta: true, message: { role: 'user', content: 'Stop hook feedback:\nplumb finish gate' } };
+  const rewritten = [user('task 1'), spawn('plumb:plumb-builder'), toolResult(), spawn('plumb:plumb-reviewer'), toolResult(),
+    say(featureReply('Strict', allFeature())), feedback, say(featureReply('Strict', allFeature()))];
+  assert.deepEqual(check(rewritten), []);
+});
+
 test('a reply with no walked list, a Direct lane, or no classification passes', () => {
   assert.deepEqual(check([user('go'), say('lane: Feature · rigor: Strict (L) · why: x\n\nQuestion 1: which shape?')]), []);
   assert.deepEqual(check([user('go'), say('lane: Direct · rigor: Light\n\n- [x] Build\n- [x] Review')]), []);
@@ -101,7 +135,7 @@ test('only the reply after the last real user turn counts, and sidechains are ig
   assert.deepEqual(classification(entries), { lane: 'Feature', rigor: 'Strict' });
 });
 
-test('CLI blocks once per state, and passes on stop_hook_active or an unreadable transcript', () => {
+test('CLI blocks once per state, still checks after stop_hook_active, and passes on an unreadable transcript', () => {
   const dir = mkdtempSync(join(tmpdir(), 'reply-check-'));
   const session = `test-${process.pid}-${Date.now()}`;
   try {
@@ -113,7 +147,7 @@ test('CLI blocks once per state, and passes on stop_hook_active or an unreadable
     assert.equal(out.decision, 'block');
     assert.match(out.reason, /^plumb reply check: .*Build/);
     assert.equal(run({ transcript_path: path, session_id: session }), '');
-    assert.equal(run({ transcript_path: path, session_id: `${session}-b`, stop_hook_active: true }), '');
+    assert.equal(JSON.parse(run({ transcript_path: path, session_id: `${session}-b`, stop_hook_active: true })).decision, 'block');
     assert.equal(run({ transcript_path: path, session_id: `${session}-c` }, { PLUMB_HOOK: 'off' }), '');
     assert.equal(run({ transcript_path: join(dir, 'nope.jsonl'), session_id: `${session}-d` }), '');
     writeFileSync(join(dir, 'bad.jsonl'), '{not json\n');
