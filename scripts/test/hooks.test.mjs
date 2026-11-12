@@ -99,3 +99,73 @@ test('the builder guard ignores git words in data and catches global options and
     '/usr/bin/git stash',
   ]) assert.ok(builder(command), command);
 });
+
+function project() {
+  const dir = mkdtempSync(join(tmpdir(), 'gate-'));
+  const g = (...args) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args], { cwd: dir, encoding: 'utf8' });
+  g('init', '-q');
+  mkdirSync(join(dir, '.plumb'));
+  writeFileSync(join(dir, 'README.md'), 'a\n');
+  writeFileSync(join(dir, 'main.c'), 'int main(void){return 0;}\n');
+  g('add', '.');
+  g('commit', '-qm', 'init');
+  const hook = (script, input) => execFileSync('sh', ['-c', script.endsWith('.mjs') ? `node "${root}hooks/${script}"` : `"${root}hooks/${script}"`], {
+    cwd: dir,
+    input: JSON.stringify(input),
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_PROJECT_DIR: dir, CLAUDE_PLUGIN_ROOT: root.replace(/\/$/, ''), PLUMB_HOOK: 'on' },
+  });
+  const start = (session_id = 's1', source = 'startup') => hook('session-start.sh', { session_id, source });
+  const stop = (session_id = 's1') => hook('stop-gate.mjs', { session_id, stop_hook_active: false });
+  return { dir, g, start, stop };
+}
+
+test('the finish gate ignores changes that were already in the tree when the session started', () => {
+  const p = project();
+  writeFileSync(join(p.dir, 'README.md'), 'a\nuser note\n');
+  writeFileSync(join(p.dir, 'notes.md'), 'draft\n');
+  assert.match(p.start(), /plumb plugin/);
+  assert.equal(p.stop(), '');
+  writeFileSync(join(p.dir, 'out.png'), 'png');
+  rmSync(join(p.dir, 'notes.md'));
+  const blocked = JSON.parse(p.stop());
+  assert.equal(blocked.decision, 'block');
+  assert.match(blocked.reason, /out\.png/);
+  assert.doesNotMatch(blocked.reason, /README\.md/);
+  rmSync(p.dir, { recursive: true });
+});
+
+test('the finish gate blocks a task edit, even to a file that was already dirty, once per state', () => {
+  const p = project();
+  writeFileSync(join(p.dir, 'README.md'), 'a\nuser note\n');
+  p.start();
+  writeFileSync(join(p.dir, 'main.c'), 'int main(void){return 1;}\n');
+  assert.equal(JSON.parse(p.stop()).decision, 'block');
+  assert.equal(p.stop(), '');
+  writeFileSync(join(p.dir, 'README.md'), 'a\nuser note\ntask line\n');
+  const blocked = JSON.parse(p.stop());
+  assert.match(blocked.reason, /README\.md/);
+  assert.match(blocked.reason, /main\.c/);
+  rmSync(p.dir, { recursive: true });
+});
+
+test('a resumed session keeps its first baseline, and a session with no baseline counts every change', () => {
+  const p = project();
+  p.start();
+  writeFileSync(join(p.dir, 'main.c'), 'changed\n');
+  p.start('s1', 'resume');
+  assert.equal(JSON.parse(p.stop()).decision, 'block');
+  assert.equal(JSON.parse(p.stop('s2')).decision, 'block');
+  p.g('commit', '-qam', 'task');
+  assert.equal(p.stop(), '');
+  rmSync(p.dir, { recursive: true });
+});
+
+test('a clear inherits the newest baseline, so work left from before the clear still counts', () => {
+  const p = project();
+  p.start('s1');
+  writeFileSync(join(p.dir, 'main.c'), 'changed\n');
+  p.start('s2', 'clear');
+  assert.match(JSON.parse(p.stop('s2')).reason, /main\.c/);
+  rmSync(p.dir, { recursive: true });
+});
