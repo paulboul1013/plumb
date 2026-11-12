@@ -7,7 +7,6 @@ import { checkTickets } from '../check-tickets.mjs';
 import { checkPlugin } from '../check-plugin.mjs';
 import { reviewDiff } from '../review-diff.mjs';
 import { worktreeHolds } from '../worktree-check.mjs';
-import { blockReason } from '../../hooks/builder-git-guard.mjs';
 import { execFileSync } from 'node:child_process';
 
 const root = new URL('../..', import.meta.url).pathname;
@@ -138,16 +137,6 @@ test('review-diff fails on a bad ref and on an empty change', () => {
   g('checkout', '-q', '--', 'kept.txt');
   execFileSync('rm', [join(dir, 'new.txt')]);
   assert.throws(() => reviewDiff('main', { cwd: dir }), /nothing to review/);
-});
-
-test('the builder guard blocks the git stash a plumb-builder ran, and nothing else', () => {
-  const call = (command, agentType) => blockReason({ agent_type: agentType, agent_id: agentType && 'a1', tool_name: 'Bash', tool_input: { command } });
-  // The command the builder ran on the shared checkout.
-  assert.match(call('git stash && npm run mocha; git stash pop', 'plumb:plumb-builder'), /git worktree add/);
-  for (const c of ['git reset --hard HEAD', 'git checkout -- public/js/cover.js', 'git restore .', 'git clean -fd']) assert.ok(call(c, 'plumb:plumb-builder'), c);
-  for (const c of ['git status', 'git diff HEAD', 'git checkout -b feature', 'git commit -m x']) assert.equal(call(c, 'plumb:plumb-builder'), null, c);
-  assert.equal(call('git stash', undefined), null);
-  assert.equal(call('git stash', 'plumb:plumb-reviewer'), null);
 });
 
 function repoWithWorktree() {

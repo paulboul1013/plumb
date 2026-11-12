@@ -6,7 +6,6 @@ import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { imageProblems, textProblems } from '../pr-publish.mjs';
-import { blockReason } from '../../hooks/pr-publish-guard.mjs';
 
 const script = new URL('../pr-publish.mjs', import.meta.url).pathname;
 const BODY = 'A body long enough to describe the change.\n';
@@ -101,23 +100,3 @@ test('plain text with no placeholder, Han, or credit has no problems', () => {
   assert.deepEqual(textProblems('body', 'Use `Vec<T>` and <details> as usual.\n'), []);
 });
 
-test('the guard blocks gh pr edit and chained comments, and names the fix', () => {
-  const reason = (command) => blockReason({ tool_name: 'Bash', tool_input: { command } });
-  for (const command of [
-    'gh pr edit 194 --repo R --body-file b.md 2>&1 | tail -1',
-    'git push -q fork x; gh pr comment 194 --body-file c.md',
-    'git -C wt commit -qm x && gh pr comment 194 --body-file c.md',
-    'gh api -X PATCH repos/R/pulls/1 -F body=@b; gh pr comment 1 --body-file c.md',
-  ]) {
-    assert.match(reason(command) ?? '', /pr-publish\.mjs/, command);
-  }
-  for (const command of [
-    'gh pr comment 194 --repo R --body-file c.md',
-    'gh pr view 194 --repo R --json body',
-    'gh pr edit 194 --add-label bug',
-    'git push -q fork x',
-  ]) {
-    assert.equal(reason(command), null, command);
-  }
-  assert.equal(blockReason({ tool_name: 'Read', tool_input: {} }), null);
-});

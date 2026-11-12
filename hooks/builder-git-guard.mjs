@@ -2,16 +2,28 @@
 // PreToolUse guard: a plumb-builder must not rewrite or discard working-tree state,
 // because a worktree can fall back to the parent's checkout and sweep up its uncommitted work.
 import { readFileSync } from 'node:fs';
+import { commands, gitSubcommand } from './shell-commands.mjs';
 
-const DESTRUCTIVE = /\bgit\s+(?:-C\s+\S+\s+)?(stash\b|reset\s+--hard\b|checkout\s+(?:--\s|\.(?:\s|$))|restore\b|clean\b)/;
+// Each rule gets git's subcommand and its arguments, after git's global options.
+const DESTRUCTIVE = {
+  stash: () => true,
+  restore: () => true,
+  clean: () => true,
+  reset: (args) => args.includes('--hard'),
+  checkout: (args) => args.includes('--') || args.includes('.') || args.some((a) => a === '-f' || a === '--force'),
+  switch: (args) => args.some((a) => a === '-f' || a === '--force' || a === '--discard-changes'),
+};
 
 export function blockReason(input) {
   if (!/plumb-builder$/.test(input.agent_type ?? '')) return null;
   if (input.tool_name !== 'Bash') return null;
-  const match = String(input.tool_input?.command ?? '').match(DESTRUCTIVE);
-  if (!match) return null;
-  return `plumb-builder may not run \`git ${match[1].trim()}\`: it can discard or hide uncommitted work in a shared checkout. ` +
-    'To run something against the base, use `git worktree add <tmp-dir> <base>` and run it there.';
+  for (const argv of commands(String(input.tool_input?.command ?? ''))) {
+    const [sub, ...args] = gitSubcommand(argv) ?? [];
+    if (!DESTRUCTIVE[sub]?.(args)) continue;
+    return `plumb-builder may not run \`git ${sub}\`: it can discard or hide uncommitted work in a shared checkout. ` +
+      'To run something against the base, use `git worktree add <tmp-dir> <base>` and run it there.';
+  }
+  return null;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
