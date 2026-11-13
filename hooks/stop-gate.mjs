@@ -16,8 +16,11 @@ export function dirtyEntries(cwd) {
   for (let k = 0; k < fields.length; k++) {
     const f = fields[k];
     if (f.length < 4) continue;
-    status.set(f.slice(3), f.slice(0, 2));
     if (f[0] === 'R' || f[0] === 'C') k++;
+    // With --untracked-files=all, only a nested repository, such as a builder's linked worktree,
+    // stays one entry with a trailing slash. Its work belongs to that repository, so skip it.
+    if (f.endsWith('/')) continue;
+    status.set(f.slice(3), f.slice(0, 2));
   }
   const files = [...status.keys()].filter((p) => { try { return statSync(join(cwd, p)).isFile(); } catch { return false; } });
   const hashes = files.length ? run(cwd, ['hash-object', '--stdin-paths'], files.join('\n')).trim().split('\n') : [];

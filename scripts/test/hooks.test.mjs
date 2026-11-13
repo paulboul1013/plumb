@@ -186,6 +186,20 @@ test('a repo that becomes a plumb repo mid-session still ignores what was there 
   rmSync(p.dir, { recursive: true });
 });
 
+test('a builder worktree nested in the project is not the session\'s uncommitted work', () => {
+  const p = project();
+  p.start();
+  // A builder subagent gets a linked worktree inside the project, as Claude Code places it.
+  p.g('worktree', 'add', '-q', '-b', 'builder', join(p.dir, '.claude', 'worktrees', 'b1'));
+  writeFileSync(join(p.dir, '.claude', 'worktrees', 'b1', 'main.c'), 'builder draft\n');
+  assert.equal(p.stop(), '');
+  writeFileSync(join(p.dir, 'main.c'), 'int main(void){return 3;}\n');
+  const blocked = JSON.parse(p.stop());
+  assert.match(blocked.reason, /main\.c/);
+  assert.doesNotMatch(blocked.reason, /worktrees/);
+  rmSync(p.dir, { recursive: true });
+});
+
 test('in a linked worktree the baseline goes to its git dir, never into the work tree', () => {
   const p = project();
   const wt = mkdtempSync(join(tmpdir(), 'gate-wt-'));
