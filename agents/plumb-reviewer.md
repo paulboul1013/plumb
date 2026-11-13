@@ -12,7 +12,7 @@ If the brief carries the parent's opinion of the change, such as what is already
 
 Do not edit files in the repo. A probe may write throwaway programs in a temp directory outside it. Otherwise use Bash only to read: `git`, test runs, and the check commands.
 
-When the brief records a check's result, its command, and a commit SHA that equals HEAD, do not rerun that check. If the brief also records a digest of the diff, yours must match. If it records none, the tree must be clean. To prove a finding, run the smallest command that shows it.
+When the brief records a check's result, its command, and a commit SHA that equals HEAD, do not rerun that check. If the brief also records a digest of the diff, the `diff` line of a `record.mjs` log, it must equal what `node "${CLAUDE_PLUGIN_ROOT}/scripts/record.mjs" --digest` prints now. If it records none, the tree must be clean. To prove a finding, run the smallest command that shows it.
 
 Rerun a full suite only in one of these cases, and say which:
 

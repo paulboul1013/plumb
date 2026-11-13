@@ -99,3 +99,20 @@ test('a bad slug or name, or a missing command, exits 2 with a usage line', () =
   }
   assert.throws(() => readdirSync(join(dir, '.plumb')));
 });
+
+test('--digest prints the same diff state a log records', () => {
+  const { dir } = repo();
+  assert.equal(record(dir, ['--digest']).stdout.trim(), 'clean');
+  writeFileSync(join(dir, 'a.txt'), 'changed\n');
+  const digest = record(dir, ['--digest']);
+  assert.equal(digest.status, 0);
+  assert.match(digest.stdout.trim(), /^sha256:[0-9a-f]{64}$/);
+  assert.match(savedLog(record(dir, ['s', 'n', '--note'], 'x')), new RegExp(`^# diff: ${digest.stdout.trim()}$`, 'm'));
+});
+
+test('two records with the same name in the same second both survive', () => {
+  const { dir } = repo();
+  const paths = [1, 2].map(() => record(dir, ['s', 'same', '--note'], 'x').stderr.trim().split('\n').at(-1));
+  assert.notEqual(paths[0], paths[1]);
+  assert.equal(readdirSync(join(dir, '.plumb', 's', 'evidence')).length, 2);
+});

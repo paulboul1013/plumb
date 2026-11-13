@@ -8,7 +8,7 @@ import { constants } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { reviewDiff } from './review-diff.mjs';
 
-const USAGE = 'usage: record.mjs <slug> <name> -- <command> [args...]\n       record.mjs <slug> <name> --note   (text on stdin)';
+const USAGE = 'usage: record.mjs <slug> <name> -- <command> [args...]\n       record.mjs <slug> <name> --note   (text on stdin)\n       record.mjs --digest               (print the tree\'s diff state)';
 
 function usage(message) {
   console.error(`error: ${message}\n${USAGE}`);
@@ -51,6 +51,12 @@ function run(argv, cwd) {
   });
 }
 
+// A reviewer checks a recorded result against the tree with --digest, so both sides hash the same diff. Read-only.
+if (process.argv[2] === '--digest') {
+  console.log(diffState(git(['rev-parse', '--show-toplevel'], process.cwd())));
+  process.exit(0);
+}
+
 const [slug, name, mode, ...command] = process.argv.slice(2);
 for (const [label, value] of [['slug', slug], ['name', name]]) {
   if (!value || /[/\s]|\.\./.test(value)) usage(`bad ${label} "${value ?? ''}": no "/", "..", or spaces`);
@@ -85,7 +91,8 @@ head.push(`# time: ${now.toISOString()}`);
 const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
 const dir = join(root, '.plumb', slug, 'evidence');
 mkdirSync(dir, { recursive: true });
-const file = join(dir, `${stamp}-${name}.log`);
+let file = join(dir, `${stamp}-${name}.log`);
+for (let n = 2; existsSync(file); n += 1) file = join(dir, `${stamp}-${name}-${n}.log`);
 writeFileSync(file, Buffer.concat([Buffer.from(`${head.join('\n')}\n\n`), body]));
 console.error(`recorded: ${file}`);
 process.exit(exit);
