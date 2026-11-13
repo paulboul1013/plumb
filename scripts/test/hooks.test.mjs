@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { commands } from '../../hooks/shell-commands.mjs';
@@ -167,5 +167,39 @@ test('a clear inherits the newest baseline, so work left from before the clear s
   writeFileSync(join(p.dir, 'main.c'), 'changed\n');
   p.start('s2', 'clear');
   assert.match(JSON.parse(p.stop('s2')).reason, /main\.c/);
+  rmSync(p.dir, { recursive: true });
+});
+
+test('a repo that becomes a plumb repo mid-session still ignores what was there at the start', () => {
+  const p = project();
+  rmSync(join(p.dir, '.plumb'), { recursive: true });
+  writeFileSync(join(p.dir, 'notes.md'), 'user draft before the session\n');
+  p.start();
+  // record.mjs creates .plumb/ and excludes it partway through the session.
+  mkdirSync(join(p.dir, '.plumb', 'x', 'evidence'), { recursive: true });
+  writeFileSync(join(p.dir, '.git', 'info', 'exclude'), '.plumb/\n');
+  assert.equal(p.stop(), '');
+  writeFileSync(join(p.dir, 'main.c'), 'int main(void){return 2;}\n');
+  const blocked = JSON.parse(p.stop());
+  assert.match(blocked.reason, /main\.c/);
+  assert.doesNotMatch(blocked.reason, /notes\.md/);
+  rmSync(p.dir, { recursive: true });
+});
+
+test('in a linked worktree the baseline goes to its git dir, never into the work tree', () => {
+  const p = project();
+  const wt = mkdtempSync(join(tmpdir(), 'gate-wt-'));
+  rmSync(wt, { recursive: true });
+  p.g('worktree', 'add', '-q', wt);
+  execFileSync('sh', ['-c', `"${root}hooks/session-start.sh"`], {
+    cwd: wt,
+    input: JSON.stringify({ session_id: 'w1', source: 'startup' }),
+    env: { ...process.env, CLAUDE_PROJECT_DIR: wt, CLAUDE_PLUGIN_ROOT: root.replace(/\/$/, ''), PLUMB_HOOK: 'on' },
+  });
+  // git status hides a stray path that contains ".git", so list the work tree itself.
+  assert.deepEqual(readdirSync(wt).sort(), ['.git', 'README.md', 'main.c']);
+  const gitDir = execFileSync('git', ['rev-parse', '--absolute-git-dir'], { cwd: wt, encoding: 'utf8' }).trim();
+  assert.ok(existsSync(join(gitDir, 'plumb', 'baseline-w1')));
+  rmSync(wt, { recursive: true });
   rmSync(p.dir, { recursive: true });
 });

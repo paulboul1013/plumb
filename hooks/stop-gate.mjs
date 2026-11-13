@@ -27,13 +27,20 @@ export function dirtyEntries(cwd) {
 
 const sessionFile = (gitDir, kind, sessionId) => join(gitDir, 'plumb', `${kind}-${String(sessionId).replace(/[^\w-]/g, '_')}`);
 
-function isPlumbRepo(cwd) {
-  if (!existsSync(join(cwd, 'docs/agents/plumb.md')) && !existsSync(join(cwd, '.plumb'))) return null;
-  try { return join(cwd, git(cwd, 'rev-parse', '--git-dir').trim()); } catch { return null; }
+function gitDirOf(cwd) {
+  // --git-dir is absolute in a linked worktree or a subdirectory, and join() would nest it under cwd.
+  try { return git(cwd, 'rev-parse', '--absolute-git-dir').trim(); } catch { return null; }
 }
 
+function isPlumbRepo(cwd) {
+  if (!existsSync(join(cwd, 'docs/agents/plumb.md')) && !existsSync(join(cwd, '.plumb'))) return null;
+  return gitDirOf(cwd);
+}
+
+// Any git repo gets a baseline, because a session can create .plumb/ partway through
+// (record.mjs, tickets, trail, handoff), and the gate then needs what the tree held at the start.
 export function record(cwd, sessionId, source) {
-  const gitDir = isPlumbRepo(cwd);
+  const gitDir = gitDirOf(cwd);
   if (!gitDir || !sessionId) return;
   const dir = join(gitDir, 'plumb');
   mkdirSync(dir, { recursive: true });
