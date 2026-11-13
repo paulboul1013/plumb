@@ -138,6 +138,15 @@ test('the map needs a Destination and a pointer to every done and every out-of-s
   ].join('\n'));
 });
 
+test('build tickets beside a map are not checked against it', () => {
+  const effort = mkdtempSync(join(tmpdir(), 'map-'));
+  writeFileSync(join(effort, 'map.md'), mapText({ destination: '' }));
+  const dir = join(effort, 'tickets');
+  mkdirSync(dir);
+  writeFileSync(join(dir, '01-a.md'), ticket('01'));
+  assert.equal(cli(dir).stdout, 'ok: 1 tickets, 1 ready now\n');
+});
+
 test('a build-ticket directory keeps its rules: no out-of-scope status, Build still required', () => {
   const dir = ticketDir({
     '01-a.md': ticket('01', { status: 'out-of-scope' }),

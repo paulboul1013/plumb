@@ -123,7 +123,7 @@ test('a valid map passes and a ticket closed as not planned unblocks like a done
     decision(13, { blockedBy: [11, 12] }),
     decision(14, { type: 'task', blockedBy: [12], assignees: ['someone'] }),
   ];
-  const map = { body: mapBody({ decided: '- [Store choice](https://github.com/o/r/issues/11) (#11): Postgres.', outOfScope: '- Mobile (#12): a later effort.' }), labels: ['plumb:map'] };
+  const map = { body: mapBody({ decided: '- [Store choice](https://github.com/o/r/issues/11): Postgres.', outOfScope: '- Mobile (#12): a later effort.' }), labels: ['plumb:map'] };
   const check = run(issues, [], {}, map);
   assert.equal(check.status, 0, check.stdout + check.stderr);
   assert.equal(check.stdout, 'ok: 4 tickets, 1 ready now\n');
@@ -136,7 +136,7 @@ test('a map needs a Destination and a pointer to every closed decision ticket', 
     decision(11, { state: 'closed', stateReason: 'completed' }),
     decision(12, { state: 'closed', stateReason: 'not_planned' }),
   ];
-  const map = { body: mapBody({ destination: '', decided: '- Something (#111): unrelated.', outOfScope: '- Decided (#11)' }), labels: ['plumb:map'] };
+  const map = { body: mapBody({ destination: '', decided: '- Something (#111) and [another](https://github.com/o/r/issues/110): unrelated.', outOfScope: '- Decided (#11)' }), labels: ['plumb:map'] };
   const check = run(issues, [], {}, map);
   assert.equal(check.status, 1);
   assert.equal(check.stdout, [

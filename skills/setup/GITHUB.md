@@ -93,6 +93,6 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <spec-iss
 
 The tickets are the spec issue's sub-issues. A closed ticket is done, an open one with an assignee is in progress, and an open unassigned one is ready. The first command prints one error per line, or `ok: N tickets, M ready now`. `--frontier` prints the ready tickets whose blockers are all closed, one `#<n> <title>` per line. A `gh` failure prints its error and exits 2.
 
-Pass a `plumb:map` issue in place of the spec issue to check a `wayfind` map. A sub-issue with a `plumb:<type>` label is a decision ticket, and one closed as not planned is out of scope. The map's body needs a Destination and a `#<n>` pointer to every closed decision ticket.
+Pass a `plumb:map` issue in place of the spec issue to check a `wayfind` map. A sub-issue with a `plumb:<type>` label is a decision ticket, and one closed as not planned is out of scope. The map's body needs a Destination and a pointer to every closed decision ticket: a link to its issue URL or a `#<n>` reference.
 
 Adapted from mattpocock/skills `setup-matt-pocock-skills/issue-tracker-github.md` (MIT).

@@ -67,12 +67,11 @@ function parseTicket(file, raw) {
   if (!status) errors.push('missing "**Status:**" line');
   else if (!allowed.has(status)) errors.push(`status "${status}" is not one of ${[...allowed].join(', ')}`);
 
-  if (!type) {
-    errors.push(...checkBody(text));
-    return { id: file, label: file, ref: file.replace(/\.md$/, ''), file, num: fileNum, blockers, status, errors };
+  if (!type) errors.push(...checkBody(text));
+  else {
+    errors.push(...checkDecisionBody(text));
+    if (status === 'done' && !section(text, 'Resolution')) errors.push('status is done but "## Resolution" is empty: write the answer and link its assets');
   }
-  errors.push(...checkDecisionBody(text));
-  if (status === 'done' && !section(text, 'Resolution')) errors.push('status is done but "## Resolution" is empty: write the answer and link its assets');
   return { id: file, label: file, ref: file.replace(/\.md$/, ''), file, num: fileNum, blockers, status, type, errors };
 }
 
@@ -82,7 +81,8 @@ export function loadLocal(dir) {
 }
 
 // A ticket ruled out of scope leaves the route, so it unblocks like a done one. Only decision tickets can be ruled out.
-const isClosed = (t) => t.status === 'done' || (t.type && t.status === 'out-of-scope');
+const isOutOfScope = (t) => Boolean(t.type) && t.status === 'out-of-scope';
+const isClosed = (t) => t.status === 'done' || isOutOfScope(t);
 
 // The map is an index: every decision made, and every ticket ruled out, has a pointer there.
 // `mentions(section, ticket)` decides what a pointer looks like on each tracker.
@@ -100,7 +100,8 @@ function checkMap(label, rawMap, tickets, mentions) {
 }
 
 const mentionsLocal = (text, t) => new RegExp(`(?<![\\w-])${t.ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`).test(text);
-const mentionsGitHub = (text, t) => new RegExp(`#${t.num}(?!\\d)`).test(text);
+// A pointer is a `#n` reference or a link to the issue's URL, which ends in `/issues/n`.
+const mentionsGitHub = (text, t) => new RegExp(`(?:#|/issues/)${t.num}(?!\\d)`).test(text);
 
 const LOCAL = { ref: (n) => `${n}`, missing: (b) => `blocker ${b} does not exist` };
 
@@ -115,7 +116,7 @@ export function checkGraph(tickets, { ref, missing } = LOCAL) {
       const blocker = byNum.get(b);
       if (!blocker) t.errors.push(missing(b));
       else if (b >= t.num) t.errors.push(`blocker ${ref(b)} must have a lower number than ${ref(t.num)}: number tickets blockers-first`);
-      else if (t.status !== 'ready' && !(t.type && t.status === 'out-of-scope') && !isClosed(blocker)) t.errors.push(`status is ${t.status} but blocker ${ref(b)} is ${blocker.status}`);
+      else if (t.status !== 'ready' && !isOutOfScope(t) && !isClosed(blocker)) t.errors.push(`status is ${t.status} but blocker ${ref(b)} is ${blocker.status}`);
     }
   }
   const frontier = tickets.filter((t) => t.status === 'ready' && t.blockers.every((b) => byNum.has(b) && isClosed(byNum.get(b))));
@@ -129,12 +130,15 @@ function gh(args) {
 const lines = (out) => out.split('\n').filter(Boolean);
 
 // A plumb:<type> label makes a sub-issue a decision ticket, since its body never states the type.
+const LABEL_PREFIX = 'plumb:';
+
 function labelType(labels) {
-  const plumb = labels.filter((l) => l.startsWith('plumb:'));
-  const errors = plumb.filter((l) => !TYPES.includes(l.slice(6)))
-    .map((l) => `label "${l}" is not one of ${TYPES.map((t) => `plumb:${t}`).join(', ')}`);
+  const plumb = labels.filter((l) => l.startsWith(LABEL_PREFIX));
+  const typeOf = (l) => l.slice(LABEL_PREFIX.length);
+  const errors = plumb.filter((l) => !TYPES.includes(typeOf(l)))
+    .map((l) => `label "${l}" is not one of ${TYPES.map((t) => LABEL_PREFIX + t).join(', ')}`);
   if (plumb.length > 1) errors.unshift(`more than one plumb type label: ${plumb.join(', ')}`);
-  return { type: plumb[0]?.slice(6), errors };
+  return { type: plumb[0] && typeOf(plumb[0]), errors };
 }
 
 // The tracker holds the title, the blocking links, and the state, so only the body is checked.
@@ -163,7 +167,8 @@ export function loadGitHub(repo, parent) {
 export function checkTickets(dir) {
   const result = checkGraph(loadLocal(dir));
   const mapFile = join(dirname(resolve(dir)), 'map.md');
-  if (existsSync(mapFile)) result.errors.push(...checkMap('map.md', readFileSync(mapFile, 'utf8'), result.tickets, mentionsLocal));
+  // Build tickets can share a parent folder with the map, so only a dir of decision tickets is checked against it.
+  if (result.tickets.some((t) => t.type) && existsSync(mapFile)) result.errors.push(...checkMap('map.md', readFileSync(mapFile, 'utf8'), result.tickets, mentionsLocal));
   return result;
 }
 
