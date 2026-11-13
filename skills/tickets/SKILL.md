@@ -59,6 +59,14 @@ The end-to-end behavior this ticket makes work, from the user's side.
 
 One issue per ticket, blockers first, so later tickets can reference real ids. Use the tracker's native blocking link where it has one. If the source was an issue, make each ticket its sub-issue. Do not close or edit the parent.
 
+On GitHub, follow [GITHUB.md](../setup/GITHUB.md): create the blockers first, attach each ticket as a sub-issue of the spec issue, and add its blocking links. Each body holds the `## Build`, `## Acceptance`, and `## Proof` sections of the local template; the tracker holds the title, blockers, and status. Then run:
+
+```
+node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <spec-issue>
+```
+
+Fix every line it prints.
+
 Name the config's `Repo` in every issue command that writes, as the `spec` skill says.
 
 In either form, leave out file paths and code, except a prototype snippet that pins a decision.

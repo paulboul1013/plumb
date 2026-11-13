@@ -179,7 +179,14 @@ Epic 車道的流程:
    node <plumb 目錄>/scripts/check-tickets.mjs .plumb/<功能名>/tickets --frontier
    ```
 
-   `<plumb 目錄>` 是[安裝](#安裝)時 clone 下來的那個目錄。
+   用 GitHub tracker 時,tickets 是 spec issue 的 sub-issue,改成:
+
+   ```bash
+   node <plumb 目錄>/scripts/check-tickets.mjs --github <owner/repo> <spec issue 編號>
+   node <plumb 目錄>/scripts/check-tickets.mjs --github <owner/repo> <spec issue 編號> --frontier
+   ```
+
+   `<plumb 目錄>` 是[安裝](#安裝)時 clone 下來的那個目錄。GitHub 上建立 issue、掛 sub-issue、加 blocking 連結、認領和關閉 ticket 的指令在 [skills/setup/GITHUB.md](skills/setup/GITHUB.md)。
 
 3. **選一種實作方式:**
    - 一張一張做:每張 ticket 開新 session,說「implement ticket 03」。
@@ -228,6 +235,7 @@ node scripts/check-plugin.mjs        # frontmatter、連結、user-invoked 引�
 node scripts/review-diff.mjs <ref>   # review 要看的完整 diff:commit、未 commit 的修改、新檔案
 node scripts/check-tickets.mjs <dir> # ticket 編號、依賴、狀態、Acceptance 與 Proof
 node scripts/check-tickets.mjs <dir> --frontier   # 列出現在可以開工的 tickets
+node scripts/check-tickets.mjs --github <owner/repo> <spec-issue> [--frontier]   # 同樣的檢查,讀 GitHub spec issue 的 sub-issue(gh 2.45 以上)
 node --test scripts/test/*.test.mjs# 腳本本身的測試
 ```
 
