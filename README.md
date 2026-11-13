@@ -235,6 +235,7 @@ node scripts/check-plugin.mjs        # frontmatter、連結、user-invoked 引�
 node scripts/review-diff.mjs <ref>   # review 要看的完整 diff:commit、未 commit 的修改、新檔案
 node scripts/record.mjs <slug> <name> -- <command>   # 跑驗證指令並存成證據檔 .plumb/<slug>/evidence/<時間>-<name>.log,記下 commit、diff 摘要和 exit code
 node scripts/record.mjs <slug> <name> --note         # 把 stdin(review 報告、截圖路徑)存成同樣的證據檔
+node scripts/record.mjs --digest                     # 印出工作樹對 HEAD 的 diff 摘要,reviewer 拿它比對證據檔的 diff 行
 node scripts/check-tickets.mjs <dir> # ticket 編號、依賴、狀態、Acceptance 與 Proof
 node scripts/check-tickets.mjs <dir> --frontier   # 列出現在可以開工的 tickets
 node scripts/check-tickets.mjs --github <owner/repo> <spec-issue> [--frontier]   # 同樣的檢查,讀 GitHub spec issue 的 sub-issue(gh 2.45 以上)
