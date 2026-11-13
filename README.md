@@ -60,6 +60,7 @@
 ## Epic 主流程
 
 ```
+(終點看不清楚時先跑 wayfind:決策票地圖 ─► check-tickets.mjs)
 align + domain ─► spec ─► tickets ─► check-tickets.mjs
    (同一個 context window,做完 tickets 前不要 clear)
                                       │
@@ -71,7 +72,7 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
 
 ## Skills
 
-模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)、`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review`(沒有車道會呼叫這六個)。
+模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`wayfind`(終點還看不清楚時,畫一張決策票地圖)、`research`(在背景 subagent 讀 repo 外的一手資料並附出處)、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)、`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review`(沒有車道會呼叫這六個)。
 
 只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`、`/plumb:ketchup`。
 
@@ -171,7 +172,7 @@ Recommended: 只能一個。疊加的計算順序會牽涉到退款邏輯,之後
 
 Epic 車道的流程:
 
-1. **對齊和 spec。** 對齊、寫 spec、切 tickets 這幾步要在同一個 session 裡做完,中間不要 `/clear`。
+1. **對齊和 spec。** 對齊、寫 spec、切 tickets 這幾步要在同一個 session 裡做完,中間不要 `/clear`。如果還說不出「做完長什麼樣」,agent 會先跑 `wayfind`:在 `.plumb/<功能名>/map.md` 畫地圖,每個還沒決定的問題寫成 `.plumb/<功能名>/decisions/` 下的一張決策票(research、prototype、align、task 四種),一個 session 只解一張(research 票例外,交給 `research` 平行跑)。同一支 `check-tickets.mjs` 也能檢查地圖:`node <plumb 目錄>/scripts/check-tickets.mjs .plumb/<功能名>/decisions`,GitHub 上則傳 `plumb:map` issue 的編號。
 2. **確認 tickets。** agent 會列出 tickets 和它們的依賴,問你粒度和依賴對不對。確認後寫進 tracker。用本機 tracker 時,可以自己檢查 ticket 和看哪些可以開工:
 
    ```bash
@@ -244,4 +245,4 @@ node --test scripts/test/*.test.mjs# 腳本本身的測試
 
 ## 授權與來源
 
-MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 這六個 skill 和兩個 thermo subagent 移植自 pstack-claude 0.9.132。`arena`、`interrogate`、`swarm` 的著作權屬於 Lauren Tan,pstack-claude 的修改屬於 Michael Denyer;`thermos`、兩個 thermo-nuclear review skill 和兩個 subagent 的著作權屬於 Cursor(都是 MIT),授權全文在 [docs/licenses/](docs/licenses/)。
+MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。`wayfind` 和 `research` 改寫自 mattpocock/skills 的 `wayfinder` 和 `research`。`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 這六個 skill 和兩個 thermo subagent 移植自 pstack-claude 0.9.132。`arena`、`interrogate`、`swarm` 的著作權屬於 Lauren Tan,pstack-claude 的修改屬於 Michael Denyer;`thermos`、兩個 thermo-nuclear review skill 和兩個 subagent 的著作權屬於 Cursor(都是 MIT),授權全文在 [docs/licenses/](docs/licenses/)。

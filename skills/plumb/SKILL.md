@@ -119,6 +119,8 @@ Model-invoked. The lanes call these.
 - `align`: interview the user on decisions, one frontier of questions per round.
 - `domain`: keep the glossary and ADRs current as terms and hard decisions settle.
 - `design`: shape the module (data shape, interface, seam) before code.
+- `wayfind`: chart a foggy destination as a map of decision tickets and resolve them one at a time.
+- `research`: read primary sources outside the repo in a background subagent and save the cited findings.
 - `spec`: write the agreed design as a spec on the tracker.
 - `tickets`: split a spec into tracer-bullet tickets with blocking edges.
 - `implement`: build one ticket or one feature, test-first, then prove and review.

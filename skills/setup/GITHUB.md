@@ -53,6 +53,37 @@ gh issue close <n> --repo <Repo>
 
 Do not use `gh issue close --comment`. On an issue that is already closed it drops the comment and still exits 0.
 
+## Create the plumb labels
+
+A `wayfind` map and its decision tickets carry these labels. Create them once per repo. `--force` updates a label that already exists, so running it again is safe.
+
+```
+gh label create plumb:map --repo <Repo> --force --description "wayfind map"
+gh label create plumb:research --repo <Repo> --force --description "decision ticket: research"
+gh label create plumb:prototype --repo <Repo> --force --description "decision ticket: prototype"
+gh label create plumb:align --repo <Repo> --force --description "decision ticket: align"
+gh label create plumb:task --repo <Repo> --force --description "decision ticket: task"
+```
+
+## Add a label to an issue
+
+```
+gh issue edit <n> --repo <Repo> --add-label <label>
+```
+
+A decision ticket carries exactly one `plumb:<type>` label.
+
+## Close an issue as not planned
+
+A decision ticket ruled out of scope closes as not planned. Post the comment first, then close:
+
+```
+gh issue comment <n> --repo <Repo> --body-file <file>
+gh issue close <n> --repo <Repo> --reason "not planned"
+```
+
+Do not use `--comment` here either, for the same reason as above.
+
 ## Check the graph
 
 ```
@@ -61,5 +92,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <spec-iss
 ```
 
 The tickets are the spec issue's sub-issues. A closed ticket is done, an open one with an assignee is in progress, and an open unassigned one is ready. The first command prints one error per line, or `ok: N tickets, M ready now`. `--frontier` prints the ready tickets whose blockers are all closed, one `#<n> <title>` per line. A `gh` failure prints its error and exits 2.
+
+Pass a `plumb:map` issue in place of the spec issue to check a `wayfind` map. A sub-issue with a `plumb:<type>` label is a decision ticket, and one closed as not planned is out of scope. The map's body needs a Destination and a `#<n>` pointer to every closed decision ticket.
 
 Adapted from mattpocock/skills `setup-matt-pocock-skills/issue-tracker-github.md` (MIT).
