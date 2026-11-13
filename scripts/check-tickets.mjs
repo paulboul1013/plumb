@@ -19,6 +19,17 @@ function maskFences(text) {
   }).join('\n');
 }
 
+// Build, Acceptance, and Proof hold on every tracker, so both loaders share this check.
+function checkBody(text) {
+  const errors = [];
+  const section = (name) => text.match(new RegExp(`^## ${name}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm'))?.[1].trim();
+  const acceptance = section('Acceptance');
+  if (!acceptance || !/^- \[[ xX]\] \S/m.test(acceptance)) errors.push('"## Acceptance" needs at least one "- [ ] <behavior>" item');
+  if (!section('Proof')) errors.push('"## Proof" is empty: name the command, scenario, or screenshot that shows it working');
+  if (!section('Build')) errors.push('"## Build" is empty: describe the end-to-end behavior');
+  return errors;
+}
+
 function parseTicket(file, raw) {
   const text = maskFences(raw);
   const errors = [];
@@ -43,33 +54,37 @@ function parseTicket(file, raw) {
   if (!status) errors.push('missing "**Status:**" line');
   else if (!STATUSES.has(status)) errors.push(`status "${status}" is not one of ${[...STATUSES].join(', ')}`);
 
-  const section = (name) => text.match(new RegExp(`^## ${name}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm'))?.[1].trim();
-  const acceptance = section('Acceptance');
-  if (!acceptance || !/^- \[[ xX]\] \S/m.test(acceptance)) errors.push('"## Acceptance" needs at least one "- [ ] <behavior>" item');
-  if (!section('Proof')) errors.push('"## Proof" is empty: name the command, scenario, or screenshot that shows it working');
-  if (!section('Build')) errors.push('"## Build" is empty: describe the end-to-end behavior');
-
-  return { file, num: fileNum, blockers, status, errors };
+  errors.push(...checkBody(text));
+  return { id: file, label: file, file, num: fileNum, blockers, status, errors };
 }
 
-export function checkTickets(dir) {
+export function loadLocal(dir) {
   const files = readdirSync(dir).filter((f) => /^\d+-.+\.md$/.test(f)).sort();
-  const tickets = files.map((f) => parseTicket(f, readFileSync(join(dir, f), 'utf8')));
+  return files.map((f) => parseTicket(f, readFileSync(join(dir, f), 'utf8')));
+}
+
+const LOCAL = { ref: (n) => `${n}`, missing: (b) => `blocker ${b} does not exist` };
+
+export function checkGraph(tickets, { ref, missing } = LOCAL) {
   const byNum = new Map();
   for (const t of tickets) {
-    if (byNum.has(t.num)) t.errors.push(`duplicate ticket number ${t.num}, also used by ${byNum.get(t.num).file}`);
+    if (byNum.has(t.num)) t.errors.push(`duplicate ticket number ${t.num}, also used by ${byNum.get(t.num).label}`);
     else byNum.set(t.num, t);
   }
   for (const t of tickets) {
     for (const b of t.blockers) {
       const blocker = byNum.get(b);
-      if (!blocker) t.errors.push(`blocker ${b} does not exist`);
-      else if (b >= t.num) t.errors.push(`blocker ${b} must have a lower number than ${t.num}: number tickets blockers-first`);
-      else if (t.status !== 'ready' && blocker.status !== 'done') t.errors.push(`status is ${t.status} but blocker ${b} is ${blocker.status}`);
+      if (!blocker) t.errors.push(missing(b));
+      else if (b >= t.num) t.errors.push(`blocker ${ref(b)} must have a lower number than ${ref(t.num)}: number tickets blockers-first`);
+      else if (t.status !== 'ready' && blocker.status !== 'done') t.errors.push(`status is ${t.status} but blocker ${ref(b)} is ${blocker.status}`);
     }
   }
   const frontier = tickets.filter((t) => t.status === 'ready' && t.blockers.every((b) => byNum.get(b)?.status === 'done'));
-  return { tickets, frontier, errors: tickets.flatMap((t) => t.errors.map((e) => `${t.file}: ${e}`)) };
+  return { tickets, frontier, errors: tickets.flatMap((t) => t.errors.map((e) => `${t.label}: ${e}`)) };
+}
+
+export function checkTickets(dir) {
+  return checkGraph(loadLocal(dir));
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
