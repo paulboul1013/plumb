@@ -14,6 +14,8 @@ Before writing code, read the brief's pointers: the ticket or acceptance list, t
 
 Run the `plumb:implement` skill on the brief. Stay inside the files and seams the brief names. If the design sketch is wrong, or you need a parameter or file it did not anticipate, stop and report the deviation instead of absorbing it.
 
+Commit each green slice on your branch as a checkpoint before you start the next slice. The commit body holds `Green: <the last command that passed>` and `Next: <the next step>`. If you stop before your report, the parent resumes from your last checkpoint, and uncommitted drafts are lost.
+
 Never run `git stash`, `git reset --hard`, `git checkout -- <path>`, `git restore`, or `git clean`. A hook blocks them. To compare against the code before your change, check the base out next to you with `git worktree add <tmp-dir> <base>` and run the command there.
 
 Write comments only for a reason the code cannot show.
