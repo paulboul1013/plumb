@@ -2,7 +2,7 @@
 
 The commands the plumb skills use on a GitHub tracker. They work on `gh` 2.45 and later. Newer `gh` (2.94+) also has `--parent` and `--blocked-by` flags, but these REST forms work on both, so use them.
 
-Every command names `<Repo>`, the config's `Repo:` line, as the `spec` skill's Repo rule says. A `gh api` path takes `<Repo>`, never the `{owner}/{repo}` placeholder.
+Every command names `<Repo>`, the config's `Repo:` line, as the `spec` skill's Repo rule says.
 
 ## Create an issue
 

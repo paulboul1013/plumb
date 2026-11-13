@@ -86,6 +86,8 @@ Use the session's task tool. If none exists, write a `todo.md` checklist outside
 
 Some steps hand work to subagents: `plumb:plumb-builder` writes the code at Standard and Strict, and `plumb:plumb-reviewer` runs each review axis. The point is separation: the agent that wrote the code does not judge it. Every subagent starts with a fresh context window, never a fork of the parent session, because a fork carries the parent's reasoning and breaks the separation between writer and judge.
 
+A builder commits each green slice as a checkpoint whose body holds `Green:` and `Next:`. When a builder stops without a report (quota, crash, timeout), run `node "${CLAUDE_PLUGIN_ROOT}/scripts/worktree-check.mjs" <worktree>` on its worktree and read `git log <base>..<branch>` for its last checkpoint commit. Uncommitted drafts in the worktree are not evidence. Rerun the checkpoint's `Green:` command, then resume the same builder or brief a fresh one from that commit with its `Next:` step.
+
 When the user asks for plumb, that request covers the subagents its steps name. Do not ask again. If the environment or the user forbids subagents, do the step in the main session and keep the separation another way: write the code yourself, then run each review axis in a fresh context that sees only the diff, its sources, and the rules in `${CLAUDE_PLUGIN_ROOT}/agents/plumb-reviewer.md`, such as a new session. Say in the final reply which steps ran without a subagent and why.
 
 ## 4. Decide who answers each question
