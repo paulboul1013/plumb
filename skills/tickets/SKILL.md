@@ -59,6 +59,6 @@ The end-to-end behavior this ticket makes work, from the user's side.
 
 One issue per ticket, blockers first, so later tickets can reference real ids. Use the tracker's native blocking link where it has one. If the source was an issue, make each ticket its sub-issue. Do not close or edit the parent.
 
-On GitHub or GitLab, pass the config's `Repo` to every issue create and edit (`gh issue create --repo <Repo>`, `glab issue create -R <Repo>`). Never rely on the default, since in a fork `gh` can default to the upstream parent. If the config has no `Repo` line, run `gh repo view --json nameWithOwner` once before the first create and confirm it is the user's own repo.
+Name the config's `Repo` in every issue command that writes, as the `spec` skill says.
 
 In either form, leave out file paths and code, except a prototype snippet that pins a decision.
