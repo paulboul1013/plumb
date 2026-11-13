@@ -108,7 +108,9 @@ A task is done when `prove` has evidence from the real artifact and `review` has
 
 Before the final reply, walk the todolist. Every lane step is done, or carries `adjusted: <what changed>, <why>` or `skip: <reason>`. A step skipped or adjusted without a reason is not done, so go back and do it. Paste the walked list into the final reply, so the user can check it without opening a file. Never mark an adjusted step done: a reader takes done to mean the step ran as the lane says.
 
-Open the final reply with the classification line, then give a short account: what changed for the user of the code, what you chose and why, the proof (paste the output), each adjusted or skipped step that lowers confidence in the result, and any decision still waiting on the user.
+Open the final reply with the classification line, then give a short account: what changed for the user of the code, what you chose and why, the proof (paste the output), the evidence directory path (`.plumb/<slug>/evidence/`, written by `record.mjs` as the `prove` skill says), each adjusted or skipped step that lowers confidence in the result, and any decision still waiting on the user.
+
+Builders do not write evidence in their worktree, because removing a worktree deletes its ignored files. After merging a builder's branch, the parent records its proof in the main checkout: rerun the proof command through `record.mjs`, or save the builder's pasted output with `record.mjs <slug> <name> --note`, and say which one each log is.
 
 ## Skills
 

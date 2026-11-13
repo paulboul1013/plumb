@@ -29,6 +29,16 @@ Read `docs/agents/plumb.md` for how to drive the app. Otherwise pick by what cha
 - Verify the process, not only the result. For each fact the proof relies on, name the record it came from, and confirm that record is the one the project's rules point at, not a paste or a file you never read.
 - A subagent's "done" is not proof. Re-run its proof yourself or read its output.
 
+## Record the evidence
+
+The parent runs each proof command through the recorder, so the output survives a cleared temp dir:
+
+```
+node "${CLAUDE_PLUGIN_ROOT}/scripts/record.mjs" <slug> <name> -- <command> [args...]
+```
+
+`<slug>` is the feature or ticket slug, and `<name>` names the check, such as `unit` or `cli-total`. It runs the command from the repo root, streams its output as usual, keeps its exit code, and saves `.plumb/<slug>/evidence/<time>-<name>.log` with the command, the commit, the diff digest, and the exit code above the output. The last stderr line prints the path. `.plumb/` stays out of git through `.git/info/exclude`. Save a screenshot under the same `.plumb/<slug>/evidence/` directory.
+
 ## By rigor
 
 At every rigor, an action door runs on a copy. Delete, deploy, or send only things you created for the proof. Touching anything else is an irreversible action, so stop and ask first.
@@ -40,4 +50,4 @@ At every rigor, an action door runs on a copy. Delete, deploy, or send only thin
 
 ## Output
 
-A short block per acceptance item: the item, the command or steps, the output or screenshot path, and pass or fail.
+A short block per acceptance item: the item, the command or steps, the output or screenshot path, the evidence log path, and pass or fail.

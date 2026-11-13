@@ -22,7 +22,7 @@ It covers commits since `<ref>`, staged and unstaged edits, and new untracked fi
 - **Spec.** The ticket, the spec, or the acceptance list. Look in commit messages for issue refs, then the lane's context, then `.plumb/` and `docs/`. If there is none, the Spec axis reports "no spec" and skips.
 - **Standards.** Every file in the repo that says how code is written: `CODING_STANDARDS.md`, `CONTRIBUTING.md`, lint configs, ADRs. Plus the smell baseline below.
 - **Proof.** The `prove` output for this change.
-- **Check results.** Before spawning reviewers, the parent runs each of the repo's checks once at HEAD and records each check's exact command, its result, and the commit SHA it ran on. Skip a check already recorded for that command and SHA. If the tree is dirty, run the checks on it and also record the digest of the step 1 diff: `node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <ref> | sha256sum`. Give this source to every axis. A recorded check result is evidence, unlike the verdicts step 3 forbids.
+- **Check results.** Before spawning reviewers, the parent runs each of the repo's checks once at HEAD and records each check's exact command, its result, and the commit SHA it ran on. Skip a check already recorded for that command and SHA. If the tree is dirty, run the checks on it and also record the digest of the step 1 diff: `node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <ref> | sha256sum`. Run each check through `node "${CLAUDE_PLUGIN_ROOT}/scripts/record.mjs" <slug> <name> -- <command>`, as the `prove` skill says. Its log is that record: the `cmd`, `exit`, and `sha` header lines hold the command, the result, and the commit, and the `diff` line holds `clean` or the digest of the tree against HEAD. Give this source, with each log path, to every axis. A recorded check result is evidence, unlike the verdicts step 3 forbids.
 
 ## 3. Run the axes in parallel
 
@@ -54,6 +54,8 @@ Each is a hint, never a hard rule.
 - **Comment as apology.** A comment that explains confusing code instead of the code being clear, or narrates what the next line does. Fix the code and delete the comment. Keep only comments that give a reason the code cannot show. A comment that states a rule of a dependency, platform, vendor, or protocol is such a reason, even when it reads like narration, because the rule lives in that system's docs, not in this repo. Flag it for deletion only with the documentation page or source file that refutes the rule. Otherwise report it as `HOLD`, name where to check, and leave it in place.
 
 ## 5. Report
+
+Save each reviewer's report as it came back: `node "${CLAUDE_PLUGIN_ROOT}/scripts/record.mjs" <slug> review-<axis> --note`, with the report on stdin.
 
 Show each axis under its own heading, lightly cleaned. Do not merge or rerank across axes. End with one line per axis: the count and the worst finding.
 

@@ -21,7 +21,7 @@ Only option 5 needs this file. Say which option you picked.
 
 ## Write the file
 
-Save it to `$TMPDIR` (else `/tmp`), not the workspace. Include:
+Save it to `.plumb/handoffs/<YYYY-MM-DD>-<slug>.md` in the repo. Keep `.plumb/` out of git: if `.plumb/` is not a line in the file `git rev-parse --git-path info/exclude` names, append it, as `record.mjs` does. Include:
 
 - **Goal.** One paragraph, plus the user's argument if they gave one.
 - **State.** The lane, the rigor, which lane steps are done, the branch and its last commit, and uncommitted changes.
@@ -30,4 +30,4 @@ Save it to `$TMPDIR` (else `/tmp`), not the workspace. Include:
 - **Next steps.** The next three actions, in order.
 - **Suggested skills.** Which plumb skills the next agent should run first.
 
-Redact keys, passwords, and personal data. Print the file path.
+Redact keys, passwords, and personal data. Print the file's full path.
