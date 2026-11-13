@@ -23,6 +23,8 @@ This is the skill. With a tight signal that goes red on this bug, the cause will
 
 A comparison (items 3 and 9) proves nothing until it has failed on purpose. Seed one known-bad change for each output it claims to compare, such as one wrong total and, separately, swapped items that keep the same total, and confirm it reports each one. Missing or unread input must make it refuse or say inconclusive, never match. Keep these controls beside the loop and rerun them before you trust a match.
 
+When you force a red by mutating code or a fixture, `diff` the mutated file against a pristine copy and show that the mutation landed before you trust the red. A mutation that never applied leaves the loop red for another reason.
+
 Reproduce it yourself on the surface where the user saw it. Ask the user only for access you cannot get, and only after you went as far as you can.
 
 **Done when** you can name one command, already run and shown, that is red-capable (it asserts the user's exact symptom), deterministic, fast, and runs without a human. For a flaky bug, raise the repro rate (loop it, add load, narrow timing) until it is high enough to debug.
