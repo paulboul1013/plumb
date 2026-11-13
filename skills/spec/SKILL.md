@@ -7,7 +7,7 @@ description: Turn the aligned conversation into a spec and publish it to the con
 
 Synthesize what the conversation already settled. Do not interview again. If a decision is still open, list it under Open decisions rather than inventing an answer.
 
-Read `docs/agents/plumb.md` for the tracker. If none is configured, write to `.plumb/<feature-slug>/spec.md`.
+Read `docs/agents/plumb.md` for the tracker. If none is configured, write to `.plumb/<feature-slug>/spec.md`. On GitHub or GitLab, pass the config's `Repo` to every issue create and edit (`gh issue create --repo <Repo>`, `glab issue create -R <Repo>`). Never rely on the default, since in a fork `gh` can default to the upstream parent. If the config has no `Repo` line, run `gh repo view --json nameWithOwner` once before the first create and confirm it is the user's own repo.
 
 Use the glossary's terms throughout and respect the ADRs in the area.
 

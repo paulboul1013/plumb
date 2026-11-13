@@ -123,7 +123,7 @@ pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用�
 
 agent 會先讀 repo(git remote、`package.json` 等設定檔、CI、詞彙表,不論叫 `GLOSSARY.md`、`CONTEXT.md` 或其他名稱),再提出一份草稿讓你確認,內容包括:
 
-- **Tracker**:ticket 放哪裡。可以是 GitHub、GitLab,或本機的 `.plumb/<功能名>/tickets/`。
+- **Tracker**:ticket 放哪裡。可以是 GitHub、GitLab,或本機的 `.plumb/<功能名>/tickets/`。選 GitHub 或 GitLab 時,也會記下目標 repo 的 `owner/name`。
 - **Checks**:typecheck、lint、單一測試檔、完整測試的指令。
 - **Run surface**:怎麼啟動 app、怎麼操作它來驗證。
 - **Domain docs**:詞彙表的實際路徑(例如 `GLOSSARY.md` 或 `CONTEXT.md`)和 ADR 放哪裡。

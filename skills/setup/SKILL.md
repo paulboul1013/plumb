@@ -28,6 +28,7 @@ Show a draft with your recommended answer for each section, so the user can acce
 ## Tracker
 
 <GitHub via gh | GitLab via glab | local files under .plumb/<feature>/ | other: one paragraph>
+Repo: <owner/name, as gh repo view printed it; omit for local files>
 Ready label: <ready-for-agent>
 
 ## Checks
@@ -47,6 +48,8 @@ Glossary: `<path, such as GLOSSARY.md or CONTEXT.md>`
 ADRs: `<docs/adr/ or none>`
 Layout: <single context | multi-context via GLOSSARY-MAP.md>
 ```
+
+A GitHub or GitLab tracker needs a reachable repo. When the user picks one and no `git remote` points at that host, ask for the repo URL and wire it up (`git init` if needed, then `git remote add origin <url>`) before going further. It is done when `gh repo view --json nameWithOwner` (or `glab repo view`) prints the project from inside this directory. If it cannot, stop and tell the user what is missing. If the repo is a fork (`gh repo view --json isFork,parent`), issues go to the user's own repo, not the upstream parent, unless the user says otherwise. Record that repo as `Repo:`.
 
 ## 3. Write
 
