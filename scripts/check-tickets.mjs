@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 
 const STATUSES = new Set(['ready', 'in-progress', 'done']);
 
@@ -20,20 +20,31 @@ function maskFences(text) {
   }).join('\n');
 }
 
+const section = (text, name) => text.match(new RegExp(`^## ${name}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm'))?.[1].trim();
+
 // Build, Acceptance, and Proof hold on every tracker, so both loaders share this check.
 function checkBody(text) {
   const errors = [];
-  const section = (name) => text.match(new RegExp(`^## ${name}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm'))?.[1].trim();
-  const acceptance = section('Acceptance');
+  const acceptance = section(text, 'Acceptance');
   if (!acceptance || !/^- \[[ xX]\] \S/m.test(acceptance)) errors.push('"## Acceptance" needs at least one "- [ ] <behavior>" item');
-  if (!section('Proof')) errors.push('"## Proof" is empty: name the command, scenario, or screenshot that shows it working');
-  if (!section('Build')) errors.push('"## Build" is empty: describe the end-to-end behavior');
+  if (!section(text, 'Proof')) errors.push('"## Proof" is empty: name the command, scenario, or screenshot that shows it working');
+  if (!section(text, 'Build')) errors.push('"## Build" is empty: describe the end-to-end behavior');
   return errors;
 }
+
+// A decision ticket's output is a decision, not code, so it holds a Question instead of Build, Acceptance, and Proof.
+function checkDecisionBody(text) {
+  return section(text, 'Question') ? [] : ['"## Question" is empty: state the decision this ticket resolves'];
+}
+
+const TYPES = ['research', 'prototype', 'align', 'task'];
+const DECISION_STATUSES = new Set([...STATUSES, 'out-of-scope']);
 
 function parseTicket(file, raw) {
   const text = maskFences(raw);
   const errors = [];
+  const type = text.match(/^\*\*Type:\*\*\s*(\S+)/m)?.[1];
+  if (type && !TYPES.includes(type)) errors.push(`type "${type}" is not one of ${TYPES.join(', ')}`);
   const fileNum = Number(file.match(/^(\d+)-/)[1]);
   const heading = text.match(/^# (\d+): (.+)$/m);
   if (!heading) errors.push('missing "# NN: <title>" heading');
@@ -52,17 +63,44 @@ function parseTicket(file, raw) {
 
   const statusLine = text.match(/^\*\*Status:\*\*\s*(\S+)/m);
   const status = statusLine?.[1];
+  const allowed = type ? DECISION_STATUSES : STATUSES;
   if (!status) errors.push('missing "**Status:**" line');
-  else if (!STATUSES.has(status)) errors.push(`status "${status}" is not one of ${[...STATUSES].join(', ')}`);
+  else if (!allowed.has(status)) errors.push(`status "${status}" is not one of ${[...allowed].join(', ')}`);
 
-  errors.push(...checkBody(text));
-  return { id: file, label: file, file, num: fileNum, blockers, status, errors };
+  if (!type) {
+    errors.push(...checkBody(text));
+    return { id: file, label: file, ref: file.replace(/\.md$/, ''), file, num: fileNum, blockers, status, errors };
+  }
+  errors.push(...checkDecisionBody(text));
+  if (status === 'done' && !section(text, 'Resolution')) errors.push('status is done but "## Resolution" is empty: write the answer and link its assets');
+  return { id: file, label: file, ref: file.replace(/\.md$/, ''), file, num: fileNum, blockers, status, type, errors };
 }
 
 export function loadLocal(dir) {
   const files = readdirSync(dir).filter((f) => /^\d+-.+\.md$/.test(f)).sort();
   return files.map((f) => parseTicket(f, readFileSync(join(dir, f), 'utf8')));
 }
+
+// A ticket ruled out of scope leaves the route, so it unblocks like a done one. Only decision tickets can be ruled out.
+const isClosed = (t) => t.status === 'done' || (t.type && t.status === 'out-of-scope');
+
+// The map is an index: every decision made, and every ticket ruled out, has a pointer there.
+// `mentions(section, ticket)` decides what a pointer looks like on each tracker.
+function checkMap(label, rawMap, tickets, mentions) {
+  const map = maskFences(rawMap);
+  const errors = [];
+  if (!section(map, 'Destination')) errors.push(`${label}: "## Destination" is empty: say what reaching the end of this map looks like`);
+  const decided = section(map, 'Decisions so far') ?? '';
+  const outOfScope = section(map, 'Out of scope') ?? '';
+  for (const t of tickets.filter((t) => t.type)) {
+    if (t.status === 'done' && !mentions(decided, t)) errors.push(`${label}: "## Decisions so far" does not mention done ticket ${t.ref}: append a pointer to it`);
+    if (t.status === 'out-of-scope' && !mentions(outOfScope, t)) errors.push(`${label}: "## Out of scope" does not mention out-of-scope ticket ${t.ref}: add one line for it`);
+  }
+  return errors;
+}
+
+const mentionsLocal = (text, t) => new RegExp(`(?<![\\w-])${t.ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`).test(text);
+const mentionsGitHub = (text, t) => new RegExp(`#${t.num}(?!\\d)`).test(text);
 
 const LOCAL = { ref: (n) => `${n}`, missing: (b) => `blocker ${b} does not exist` };
 
@@ -77,10 +115,10 @@ export function checkGraph(tickets, { ref, missing } = LOCAL) {
       const blocker = byNum.get(b);
       if (!blocker) t.errors.push(missing(b));
       else if (b >= t.num) t.errors.push(`blocker ${ref(b)} must have a lower number than ${ref(t.num)}: number tickets blockers-first`);
-      else if (t.status !== 'ready' && blocker.status !== 'done') t.errors.push(`status is ${t.status} but blocker ${ref(b)} is ${blocker.status}`);
+      else if (t.status !== 'ready' && !(t.type && t.status === 'out-of-scope') && !isClosed(blocker)) t.errors.push(`status is ${t.status} but blocker ${ref(b)} is ${blocker.status}`);
     }
   }
-  const frontier = tickets.filter((t) => t.status === 'ready' && t.blockers.every((b) => byNum.get(b)?.status === 'done'));
+  const frontier = tickets.filter((t) => t.status === 'ready' && t.blockers.every((b) => byNum.has(b) && isClosed(byNum.get(b))));
   return { tickets, frontier, errors: tickets.flatMap((t) => t.errors.map((e) => `${t.label}: ${e}`)) };
 }
 
@@ -105,7 +143,10 @@ export function loadGitHub(repo, parent) {
 }
 
 export function checkTickets(dir) {
-  return checkGraph(loadLocal(dir));
+  const result = checkGraph(loadLocal(dir));
+  const mapFile = join(dirname(resolve(dir)), 'map.md');
+  if (existsSync(mapFile)) result.errors.push(...checkMap('map.md', readFileSync(mapFile, 'utf8'), result.tickets, mentionsLocal));
+  return result;
 }
 
 function run(args) {

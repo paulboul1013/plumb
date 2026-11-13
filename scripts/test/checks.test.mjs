@@ -7,7 +7,7 @@ import { checkTickets } from '../check-tickets.mjs';
 import { checkPlugin } from '../check-plugin.mjs';
 import { reviewDiff } from '../review-diff.mjs';
 import { worktreeHolds } from '../worktree-check.mjs';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const root = new URL('../..', import.meta.url).pathname;
 
@@ -63,6 +63,96 @@ test('a missing blocker, missing proof, and empty acceptance are each reported',
 test('a ticket in progress while its blocker is not done is reported', () => {
   const dir = ticketDir({ '01-a.md': ticket('01'), '02-b.md': ticket('02', { blockedBy: '01', status: 'in-progress' }) });
   assert.deepEqual(checkTickets(dir).errors, ['02-b.md: status is in-progress but blocker 1 is ready']);
+});
+
+const checkTicketsCli = join(root, 'scripts', 'check-tickets.mjs');
+const cli = (...args) => spawnSync('node', [checkTicketsCli, ...args], { encoding: 'utf8' });
+
+function decision(num, { type = 'align', blockedBy = 'None', status = 'ready', question = 'Which store holds the cart?', resolution = '' } = {}) {
+  return `# ${num}: Decision ${num}\n\n**Type:** ${type}\n**Blocked by:** ${blockedBy}\n**Status:** ${status}\n\n## Question\n\n${question}\n\n## Resolution\n\n${resolution}\n`;
+}
+
+function mapText({ destination = 'A spec for the cart rewrite.', decided = '', outOfScope = '' } = {}) {
+  return `# Map: cart rewrite\n\n## Destination\n\n${destination}\n\n## Notes\n\n## Decisions so far\n\n${decided}\n\n## Not yet specified\n\n## Out of scope\n\n${outOfScope}\n`;
+}
+
+// An effort folder: map.md beside a decisions/ directory, as wayfind lays it out.
+function mapDir(map, files) {
+  const effort = mkdtempSync(join(tmpdir(), 'map-'));
+  if (map !== null) writeFileSync(join(effort, 'map.md'), map);
+  const dir = join(effort, 'decisions');
+  mkdirSync(dir);
+  for (const [name, body] of Object.entries(files)) writeFileSync(join(dir, name), body);
+  return dir;
+}
+
+test('a valid map passes and out-of-scope tickets count as closed for blocking and the frontier', () => {
+  const dir = mapDir(
+    mapText({ decided: '- [Decision 01](decisions/01-store.md): Postgres.', outOfScope: '- [Decision 02](decisions/02-mobile.md): mobile is a later effort.' }),
+    {
+      '01-store.md': decision('01', { type: 'research', status: 'done', resolution: 'Postgres, see research/store.md.' }),
+      '02-mobile.md': decision('02', { type: 'prototype', status: 'out-of-scope' }),
+      '03-shape.md': decision('03', { blockedBy: '01, 02' }),
+      '04-signup.md': decision('04', { type: 'task', blockedBy: '01', status: 'in-progress' }),
+    },
+  );
+  const check = cli(dir);
+  assert.equal(check.status, 0, check.stdout + check.stderr);
+  assert.equal(check.stdout, 'ok: 4 tickets, 1 ready now\n');
+  assert.equal(cli(dir, '--frontier').stdout, '03-shape.md\n');
+});
+
+test('a decision ticket needs a known type and a Question, not Build, Acceptance, or Proof', () => {
+  const dir = mapDir(null, {
+    '01-a.md': decision('01', { type: 'grilling', question: '' }),
+    '02-b.md': decision('02', { status: 'blocked' }),
+  });
+  const check = cli(dir);
+  assert.equal(check.status, 1);
+  assert.equal(check.stdout, [
+    '01-a.md: type "grilling" is not one of research, prototype, align, task',
+    '01-a.md: "## Question" is empty: state the decision this ticket resolves',
+    '02-b.md: status "blocked" is not one of ready, in-progress, done, out-of-scope',
+    '',
+  ].join('\n'));
+});
+
+test('a done decision ticket needs a Resolution', () => {
+  const check = cli(mapDir(null, { '01-a.md': decision('01', { status: 'done' }) }));
+  assert.equal(check.status, 1);
+  assert.equal(check.stdout, '01-a.md: status is done but "## Resolution" is empty: write the answer and link its assets\n');
+});
+
+test('the map needs a Destination and a pointer to every done and every out-of-scope ticket', () => {
+  const dir = mapDir(mapText({ destination: '', decided: '- [Decision 011](decisions/01-store-v2.md): a longer name.' }), {
+    '01-store.md': decision('01', { status: 'done', resolution: 'Postgres.' }),
+    '02-mobile.md': decision('02', { status: 'out-of-scope' }),
+  });
+  const check = cli(dir);
+  assert.equal(check.status, 1);
+  assert.equal(check.stdout, [
+    'map.md: "## Destination" is empty: say what reaching the end of this map looks like',
+    'map.md: "## Decisions so far" does not mention done ticket 01-store: append a pointer to it',
+    'map.md: "## Out of scope" does not mention out-of-scope ticket 02-mobile: add one line for it',
+    '',
+  ].join('\n'));
+});
+
+test('a build-ticket directory keeps its rules: no out-of-scope status, Build still required', () => {
+  const dir = ticketDir({
+    '01-a.md': ticket('01', { status: 'out-of-scope' }),
+    '02-b.md': ticket('02', { blockedBy: '01', status: 'in-progress', proof: '' }),
+    '03-c.md': ticket('03', { status: 'done' }),
+  });
+  const check = cli(dir);
+  assert.equal(check.status, 1);
+  assert.equal(check.stdout, [
+    '01-a.md: status "out-of-scope" is not one of ready, in-progress, done',
+    '02-b.md: "## Proof" is empty: name the command, scenario, or screenshot that shows it working',
+    '02-b.md: status is in-progress but blocker 1 is out-of-scope',
+    '',
+  ].join('\n'));
+  assert.equal(cli(ticketDir({ '01-a.md': ticket('01') })).stdout, 'ok: 1 tickets, 1 ready now\n');
 });
 
 test('the shipped plugin passes its own checks', () => {
