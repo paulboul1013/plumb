@@ -20,3 +20,7 @@ When a correction repeats, enforce it with a check, a script, or a hook, and add
 | A fix's verification scales with its size: `review` again, one reviewer, or none when no behavior or instruction changes. | Docs only: `skills/review/SKILL.md`. Sizing a fix is a judgment call. |
 | A lane step run in a lighter or different form is marked `adjusted: <what changed>, <why>`, never done, and the final reply names it. | `hooks/reply-check.mjs` checks that the walked list names every lane step with a status and a reason, and that a step marked done at Standard or Strict whose lane text hands work to `plumb:plumb-builder` or runs `review` has that spawn in the same task. Docs only for any other lighter run of a step: `skills/plumb/SKILL.md`, `hooks/stop-gate.json`, since whether a step ran as written is a judgment call. |
 | Align asks only decisions, and the confirmation is a question in its last round, never a round that shows the process for approval. | Docs only: `skills/align/SKILL.md`, `skills/design/SKILL.md`, the Feature lane. Whether a question is a decision or the process is a judgment call. |
+
+## Agent skills
+
+Plumb config: `docs/agents/plumb.md`.
