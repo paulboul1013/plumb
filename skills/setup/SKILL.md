@@ -55,7 +55,7 @@ When the tracker is GitHub, the commands for issues, sub-issues, blocking links,
 
 ## 3. Write
 
-Write `docs/agents/plumb.md`. Then add a pointer to whichever of `CLAUDE.md` or `AGENTS.md` exists, editing an existing `## Agent skills` block in place:
+Write `docs/agents/plumb.md`. It holds how to work, never where the work is: no current chapter, test counts, progress, or "currently". When a state claim is needed, write it as dated history with the commit: "As of 2026-11-12 (abc1234), ...". Then add a pointer to whichever of `CLAUDE.md` or `AGENTS.md` exists, editing an existing `## Agent skills` block in place:
 
 ```markdown
 ## Agent skills

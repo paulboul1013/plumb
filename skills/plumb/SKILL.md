@@ -7,7 +7,7 @@ description: Route an engineering task to the right lane and rigor before work s
 
 Every task runs one **lane** at one **rigor**. The lane is the sequence of steps. The rigor sets how heavy each step is. Classify first, then work the lane.
 
-Read `docs/agents/plumb.md` if it exists. It names the issue tracker, the check commands, how to drive the app, and where the glossary lives.
+Read `docs/agents/plumb.md` if it exists. It names the issue tracker, the check commands, how to drive the app, and where the glossary lives. Treat any state claim in it, such as a count, a current phase, or a "now", as a lead to check against the repo, not a fact. A claim dated with a commit older than HEAD is history.
 
 If it is missing, infer what the lane needs from the repo: `package.json` scripts or the build file, the CI workflow, and `AGENTS.md` or `CLAUDE.md`. For checks, run what CI runs. When CI does not settle it, run the most complete command, such as `npm test`, never a subset of it. Print each inferred value on the line after the classification, with its source, for example `checks (from .github/workflows/ci.yml): npm test`. Suggest `/plumb:setup` once in the final reply so the next run does not have to guess.
 
