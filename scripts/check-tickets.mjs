@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -83,21 +84,65 @@ export function checkGraph(tickets, { ref, missing } = LOCAL) {
   return { tickets, frontier, errors: tickets.flatMap((t) => t.errors.map((e) => `${t.label}: ${e}`)) };
 }
 
+function gh(args) {
+  return execFileSync('gh', ['api', '--paginate', ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+}
+
+const lines = (out) => out.split('\n').filter(Boolean);
+
+// The tracker holds the title, the blocking links, and the state, so only the body is checked.
+export function loadGitHub(repo, parent) {
+  const issues = lines(gh([`repos/${repo}/issues/${parent}/sub_issues`, '--jq', '.[] | {number,title,body,state,assignees:[.assignees[].login]}']))
+    .map((line) => JSON.parse(line));
+  return issues.map((i) => ({
+    id: i.number,
+    label: `#${i.number} ${i.title}`,
+    num: i.number,
+    blockers: lines(gh([`repos/${repo}/issues/${i.number}/dependencies/blocked_by`, '--jq', '.[].number'])).map(Number),
+    status: i.state === 'closed' ? 'done' : i.assignees.length ? 'in-progress' : 'ready',
+    errors: checkBody(maskFences(i.body ?? '')),
+  }));
+}
+
 export function checkTickets(dir) {
   return checkGraph(loadLocal(dir));
 }
 
+function run(args) {
+  const github = args.indexOf('--github');
+  if (github >= 0) {
+    const [repo, parent] = args.slice(github + 1);
+    if (!repo || !/^\d+$/.test(parent ?? '')) return { usage: true };
+    let tickets;
+    try {
+      tickets = loadGitHub(repo, parent);
+    } catch (err) {
+      return { fatal: err.stderr?.toString() || err.message };
+    }
+    const result = checkGraph(tickets, { ref: (n) => `#${n}`, missing: (b) => `blocker #${b} is not a sub-issue of #${parent}` });
+    if (tickets.length === 0) result.errors.push(`#${parent}: no sub-issues found`);
+    return result;
+  }
+  const dir = args.find((a) => !a.startsWith('--'));
+  if (!dir) return { usage: true };
+  const result = checkTickets(dir);
+  if (result.tickets.length === 0) result.errors.push(`${dir}: no NN-<slug>.md tickets found`);
+  return result;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
-  const dir = args.find((a) => !a.startsWith('--'));
-  if (!dir) {
-    console.error('usage: check-tickets.mjs <tickets-dir> [--frontier]');
+  const { usage, fatal, tickets, frontier, errors } = run(args);
+  if (usage) {
+    console.error('usage: check-tickets.mjs <tickets-dir> [--frontier]\n       check-tickets.mjs --github <owner/repo> <spec-issue> [--frontier]');
     process.exit(2);
   }
-  const { tickets, frontier, errors } = checkTickets(dir);
-  if (tickets.length === 0) errors.push(`${dir}: no NN-<slug>.md tickets found`);
+  if (fatal) {
+    process.stderr.write(fatal.endsWith('\n') ? fatal : `${fatal}\n`);
+    process.exit(2);
+  }
   for (const e of errors) console.log(e);
   if (errors.length) process.exit(1);
-  if (args.includes('--frontier')) for (const t of frontier) console.log(t.file);
+  if (args.includes('--frontier')) for (const t of frontier) console.log(t.label);
   else console.log(`ok: ${tickets.length} tickets, ${frontier.length} ready now`);
 }
