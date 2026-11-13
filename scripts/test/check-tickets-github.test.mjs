@@ -12,22 +12,34 @@ function body({ acceptance = '- [ ] user sees the total', proof = 'npm test -- c
   return `## Build\n\nA slice.\n\n## Acceptance\n\n${acceptance}\n\n## Proof\n\n${proof}\n`;
 }
 
-function issue(number, { state = 'open', assignees = [], blockedBy = [], ...sections } = {}) {
-  return { number, title: `Ticket ${number}`, body: body(sections), state, assignees, blockedBy };
+function issue(number, { state = 'open', stateReason = null, assignees = [], blockedBy = [], labels = [], ...sections } = {}) {
+  return { number, title: `Ticket ${number}`, body: body(sections), state, state_reason: stateReason, assignees, labels, blockedBy };
 }
 
-// A fake gh that answers the two REST reads from fixtures and logs every call.
-function run(issues, args = [], env = {}) {
+function decision(number, { type = 'align', question = 'Which store holds the cart?', ...rest } = {}) {
+  return { ...issue(number, { labels: [`plumb:${type}`], ...rest }), body: `## Question\n\n${question}\n` };
+}
+
+function mapBody({ destination = 'A spec for the cart rewrite.', decided = '', outOfScope = '' } = {}) {
+  return `## Destination\n\n${destination}\n\n## Notes\n\n## Decisions so far\n\n${decided}\n\n## Not yet specified\n\n## Out of scope\n\n${outOfScope}\n`;
+}
+
+const SPEC_PARENT = { body: 'The spec.', labels: [] };
+
+// A fake gh that answers the three REST reads from fixtures and logs every call.
+function run(issues, args = [], env = {}, parent = SPEC_PARENT) {
   const dir = mkdtempSync(join(tmpdir(), 'check-tickets-gh-'));
   const log = join(dir, 'gh.log');
   writeFileSync(log, '');
   writeFileSync(join(dir, 'subs.jsonl'), issues.map(({ blockedBy, ...i }) => JSON.stringify(i)).join('\n') + '\n');
+  writeFileSync(join(dir, 'parent.json'), JSON.stringify(parent) + '\n');
   for (const i of issues) writeFileSync(join(dir, `blocked-${i.number}.txt`), i.blockedBy.map((n) => `${n}\n`).join(''));
   writeFileSync(join(dir, 'gh'), `#!/usr/bin/env bash
 echo "$*" >> "${log}"
 [ -n "$STUB_FAIL" ] && { echo 'HTTP 404: Not Found' >&2; exit 1; }
 case "$*" in
   *"issues/${SPEC}/sub_issues"*) cat "${dir}/subs.jsonl" ;;
+  *"repos/o/r/issues/${SPEC} "*) cat "${dir}/parent.json" ;;
   *"/dependencies/blocked_by"*) n="$*"; n=\${n#*issues/}; n=\${n%%/*}; cat "${dir}/blocked-$n.txt" 2>/dev/null ;;
   *) echo "unexpected: $*" >&2; exit 1 ;;
 esac
@@ -87,4 +99,56 @@ test('a gh failure prints its stderr and exits 2', () => {
   const check = run([issue(11)], [], { STUB_FAIL: '1' });
   assert.equal(check.status, 2);
   assert.match(check.stderr, /HTTP 404: Not Found/);
+});
+
+test('a decision ticket needs a Question and exactly one known plumb type label', () => {
+  const check = run([
+    decision(11, { question: '' }),
+    { ...decision(12), labels: ['plumb:research', 'plumb:align'] },
+    { ...decision(13), labels: ['plumb:grilling', 'bug'] },
+  ]);
+  assert.equal(check.status, 1);
+  assert.equal(check.stdout, [
+    '#11 Ticket 11: "## Question" is empty: state the decision this ticket resolves',
+    '#12 Ticket 12: more than one plumb type label: plumb:research, plumb:align',
+    '#13 Ticket 13: label "plumb:grilling" is not one of plumb:research, plumb:prototype, plumb:align, plumb:task',
+    '',
+  ].join('\n'));
+});
+
+test('a valid map passes and a ticket closed as not planned unblocks like a done one', () => {
+  const issues = [
+    decision(11, { type: 'research', state: 'closed', stateReason: 'completed' }),
+    decision(12, { type: 'prototype', state: 'closed', stateReason: 'not_planned' }),
+    decision(13, { blockedBy: [11, 12] }),
+    decision(14, { type: 'task', blockedBy: [12], assignees: ['someone'] }),
+  ];
+  const map = { body: mapBody({ decided: '- [Store choice](https://github.com/o/r/issues/11) (#11): Postgres.', outOfScope: '- Mobile (#12): a later effort.' }), labels: ['plumb:map'] };
+  const check = run(issues, [], {}, map);
+  assert.equal(check.status, 0, check.stdout + check.stderr);
+  assert.equal(check.stdout, 'ok: 4 tickets, 1 ready now\n');
+  assert.ok(check.calls.some((c) => c.startsWith(`api --paginate repos/o/r/issues/${SPEC} `)), check.calls.join('\n'));
+  assert.equal(run(issues, ['--frontier'], {}, map).stdout, '#13 Ticket 13\n');
+});
+
+test('a map needs a Destination and a pointer to every closed decision ticket', () => {
+  const issues = [
+    decision(11, { state: 'closed', stateReason: 'completed' }),
+    decision(12, { state: 'closed', stateReason: 'not_planned' }),
+  ];
+  const map = { body: mapBody({ destination: '', decided: '- Something (#111): unrelated.', outOfScope: '- Decided (#11)' }), labels: ['plumb:map'] };
+  const check = run(issues, [], {}, map);
+  assert.equal(check.status, 1);
+  assert.equal(check.stdout, [
+    `#${SPEC}: "## Destination" is empty: say what reaching the end of this map looks like`,
+    `#${SPEC}: "## Decisions so far" does not mention done ticket #11: append a pointer to it`,
+    `#${SPEC}: "## Out of scope" does not mention out-of-scope ticket #12: add one line for it`,
+    '',
+  ].join('\n'));
+});
+
+test('a spec parent skips the map checks and a build ticket closed as not planned is still done', () => {
+  const check = run([issue(11, { state: 'closed', stateReason: 'not_planned' }), issue(12, { blockedBy: [11] })]);
+  assert.equal(check.status, 0, check.stdout + check.stderr);
+  assert.equal(check.stdout, 'ok: 2 tickets, 1 ready now\n');
 });

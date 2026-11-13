@@ -128,18 +128,36 @@ function gh(args) {
 
 const lines = (out) => out.split('\n').filter(Boolean);
 
+// A plumb:<type> label makes a sub-issue a decision ticket, since its body never states the type.
+function labelType(labels) {
+  const plumb = labels.filter((l) => l.startsWith('plumb:'));
+  const errors = plumb.filter((l) => !TYPES.includes(l.slice(6)))
+    .map((l) => `label "${l}" is not one of ${TYPES.map((t) => `plumb:${t}`).join(', ')}`);
+  if (plumb.length > 1) errors.unshift(`more than one plumb type label: ${plumb.join(', ')}`);
+  return { type: plumb[0]?.slice(6), errors };
+}
+
 // The tracker holds the title, the blocking links, and the state, so only the body is checked.
 export function loadGitHub(repo, parent) {
-  const issues = lines(gh([`repos/${repo}/issues/${parent}/sub_issues`, '--jq', '.[] | {number,title,body,state,assignees:[.assignees[].login]}']))
+  const issues = lines(gh([`repos/${repo}/issues/${parent}/sub_issues`, '--jq', '.[] | {number,title,body,state,state_reason,assignees:[.assignees[].login],labels:[.labels[].name]}']))
     .map((line) => JSON.parse(line));
-  return issues.map((i) => ({
-    id: i.number,
-    label: `#${i.number} ${i.title}`,
-    num: i.number,
-    blockers: lines(gh([`repos/${repo}/issues/${i.number}/dependencies/blocked_by`, '--jq', '.[].number'])).map(Number),
-    status: i.state === 'closed' ? 'done' : i.assignees.length ? 'in-progress' : 'ready',
-    errors: checkBody(maskFences(i.body ?? '')),
-  }));
+  const tickets = issues.map((i) => {
+    const { type, errors } = labelType(i.labels ?? []);
+    const body = maskFences(i.body ?? '');
+    const closed = type && i.state_reason === 'not_planned' ? 'out-of-scope' : 'done';
+    return {
+      id: i.number,
+      label: `#${i.number} ${i.title}`,
+      ref: `#${i.number}`,
+      num: i.number,
+      type,
+      blockers: lines(gh([`repos/${repo}/issues/${i.number}/dependencies/blocked_by`, '--jq', '.[].number'])).map(Number),
+      status: i.state === 'closed' ? closed : i.assignees.length ? 'in-progress' : 'ready',
+      errors: type ? [...errors, ...checkDecisionBody(body)] : checkBody(body),
+    };
+  });
+  const map = JSON.parse(gh([`repos/${repo}/issues/${parent}`, '--jq', '{body,labels:[.labels[].name]}']));
+  return { tickets, map: map.labels.includes('plumb:map') ? map.body ?? '' : null };
 }
 
 export function checkTickets(dir) {
@@ -154,14 +172,16 @@ function run(args) {
   if (github >= 0) {
     const [repo, parent] = args.slice(github + 1);
     if (!repo || !/^\d+$/.test(parent ?? '')) return { usage: true };
-    let tickets;
+    let loaded;
     try {
-      tickets = loadGitHub(repo, parent);
+      loaded = loadGitHub(repo, parent);
     } catch (err) {
       return { fatal: err.stderr?.toString() || err.message };
     }
+    const { tickets, map } = loaded;
     const result = checkGraph(tickets, { ref: (n) => `#${n}`, missing: (b) => `blocker #${b} is not a sub-issue of #${parent}` });
     if (tickets.length === 0) result.errors.push(`#${parent}: no sub-issues found`);
+    if (map !== null) result.errors.push(...checkMap(`#${parent}`, map, tickets, mentionsGitHub));
     return result;
   }
   const dir = args.find((a) => !a.startsWith('--'));
@@ -175,7 +195,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const { usage, fatal, tickets, frontier, errors } = run(args);
   if (usage) {
-    console.error('usage: check-tickets.mjs <tickets-dir> [--frontier]\n       check-tickets.mjs --github <owner/repo> <spec-issue> [--frontier]');
+    console.error('usage: check-tickets.mjs <tickets-or-decisions-dir> [--frontier]\n       check-tickets.mjs --github <owner/repo> <spec-or-map-issue> [--frontier]');
     process.exit(2);
   }
   if (fatal) {
