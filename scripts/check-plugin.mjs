@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { fileURLToPath } from 'node:url';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isMain } from './entry.mjs';
 
 function walk(dir) {

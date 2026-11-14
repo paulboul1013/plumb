@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // PreToolUse guard: send PR body updates and chained comments through scripts/pr-publish.mjs,
 // so a failed step cannot leave a comment that describes work GitHub does not show.
-import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { commands, gitSubcommand, program } from './shell-commands.mjs';
 import { isMain } from '../scripts/entry.mjs';
 
