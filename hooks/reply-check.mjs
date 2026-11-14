@@ -3,6 +3,7 @@
 // each done or carrying `adjusted:` or `skip:` with a reason, and at Standard or Strict a step whose lane text hands
 // work to plumb-builder or runs `review` is marked done only when this task spawned that subagent.
 // It reads the Claude Code JSONL transcript. Any other transcript (Codex) fails to classify, so the hook passes.
+import { fileURLToPath } from 'node:url';
 import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -128,7 +129,7 @@ if (isMain(import.meta.url)) {
     // The once-per-state marker below is what keeps the session from being trapped.
     const entries = readFileSync(input.transcript_path, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l));
     const c = classification(entries);
-    const root = new URL('..', import.meta.url).pathname;
+    const root = fileURLToPath(new URL('..', import.meta.url));
     const steps = c && laneSteps(root)[c.lane];
     if (!steps?.length) process.exit(0);
     const task = taskEntries(entries, steps);

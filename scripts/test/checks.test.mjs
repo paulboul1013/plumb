@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -9,7 +10,7 @@ import { reviewDiff } from '../review-diff.mjs';
 import { worktreeHolds } from '../worktree-check.mjs';
 import { execFileSync, spawnSync } from 'node:child_process';
 
-const root = new URL('../..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('../..', import.meta.url));
 
 function ticket(num, { blockedBy = 'None', status = 'ready', acceptance = '- [ ] user sees the total', proof = 'npm test -- cart' } = {}) {
   return `# ${num}: Ticket ${num}\n\n**Blocked by:** ${blockedBy}\n**Status:** ${status}\n\n## Build\n\nA slice.\n\n## Acceptance\n\n${acceptance}\n\n## Proof\n\n${proof}\n`;
@@ -197,6 +198,18 @@ test('the plugin check catches a hard-coded GLOSSARY.md and a commits-only revie
   const errors = checkPlugin(dir);
   assert.ok(errors.some((e) => e.startsWith('agents/plumb-builder.md:') && e.includes('hard-coded GLOSSARY.md')));
   assert.ok(errors.some((e) => e.startsWith('skills/review/SKILL.md:') && e.includes('review-diff.mjs')));
+});
+
+test('the plugin check catches an argv entry comparison and a URL pathname in scripts and hooks', () => {
+  const dir = pluginCopy();
+  cpSync(join(root, 'scripts'), join(dir, 'scripts'), { recursive: true });
+  const meta = 'import.meta' + '.url';
+  // The entry check that let `git stash` through a symlinked plugin dir.
+  writeFileSync(join(dir, 'hooks/bad-entry.mjs'), `\nif (${meta} === \`file://\${process.argv[1]}\`) {}\n`);
+  writeFileSync(join(dir, 'scripts/test/bad-path.test.mjs'), `const root = new URL('..', ${meta}).pathname;\n`);
+  const errors = checkPlugin(dir);
+  assert.ok(errors.some((e) => e.startsWith('hooks/bad-entry.mjs:2:') && e.includes('isMain(import.meta.url)')));
+  assert.ok(errors.some((e) => e.startsWith('scripts/test/bad-path.test.mjs:1:') && e.includes('fileURLToPath')));
 });
 
 test('the plugin check reads a link destination written in angle brackets as the path inside them', () => {

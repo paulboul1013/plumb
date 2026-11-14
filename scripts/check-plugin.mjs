@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { fileURLToPath } from 'node:url';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { isMain } from './entry.mjs';
@@ -65,6 +66,18 @@ export function checkPlugin(root) {
     }
   }
 
+  const code = ['scripts', 'hooks'].map((d) => join(root, d)).filter(existsSync).flatMap(walk).filter((p) => p.endsWith('.mjs'));
+  for (const file of code) {
+    readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+      if (/import\.meta\.url\s*[!=]==?.*process\.argv\[1\]|process\.argv\[1\].*[!=]==?\s*import\.meta\.url/.test(line)) {
+        errors.push(`${rel(file)}:${i + 1}: comparing import.meta.url with process.argv[1] misses a symlinked or spaced path; use \`isMain(import.meta.url)\` from scripts/entry.mjs`);
+      }
+      if (/import\.meta\.url\)\.pathname/.test(line)) {
+        errors.push(`${rel(file)}:${i + 1}: a URL pathname keeps %20 for a space; use \`fileURLToPath\` from node:url`);
+      }
+    });
+  }
+
   const router = readFileSync(join(skillsDir, 'plumb', 'SKILL.md'), 'utf8');
   const listed = new Set([...router.split('## Skills')[1].matchAll(/^- `\/?(?:plumb:)?([a-z-]+)`/gm)].map((m) => m[1]));
   for (const name of skills.keys()) {
@@ -79,7 +92,7 @@ export function checkPlugin(root) {
 }
 
 if (isMain(import.meta.url)) {
-  const errors = checkPlugin(resolve(process.argv[2] ?? join(dirname(new URL(import.meta.url).pathname), '..')));
+  const errors = checkPlugin(resolve(process.argv[2] ?? join(dirname(fileURLToPath(import.meta.url)), '..')));
   for (const e of errors) console.log(e);
   if (errors.length) process.exit(1);
   console.log('ok: plugin checks pass');

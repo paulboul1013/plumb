@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -5,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 
-const script = new URL('../record.mjs', import.meta.url).pathname;
+const script = fileURLToPath(new URL('../record.mjs', import.meta.url));
 
 function repo() {
   const dir = mkdtempSync(join(tmpdir(), 'record-'));

@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -6,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { classification, laneEvidence, laneSteps, problems, replyText, stepStatuses, taskEntries, toolUses } from '../../hooks/reply-check.mjs';
 
-const root = new URL('../..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('../..', import.meta.url));
 const hook = join(root, 'hooks/reply-check.mjs');
 const steps = laneSteps(root);
 const evidence = laneEvidence(root);

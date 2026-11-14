@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -5,7 +6,7 @@ import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const script = new URL('../check-tickets.mjs', import.meta.url).pathname;
+const script = fileURLToPath(new URL('../check-tickets.mjs', import.meta.url));
 const SPEC = 10;
 
 function body({ acceptance = '- [ ] user sees the total', proof = 'npm test -- cart' } = {}) {

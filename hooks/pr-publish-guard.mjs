@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // PreToolUse guard: send PR body updates and chained comments through scripts/pr-publish.mjs,
 // so a failed step cannot leave a comment that describes work GitHub does not show.
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { commands, gitSubcommand, program } from './shell-commands.mjs';
 import { isMain } from '../scripts/entry.mjs';
 
-const PUBLISH = new URL('../scripts/pr-publish.mjs', import.meta.url).pathname;
+const PUBLISH = fileURLToPath(new URL('../scripts/pr-publish.mjs', import.meta.url));
 const FIX = `Run: node "${PUBLISH}" --repo R --pr N --body FILE [--comment FILE]. It checks the text and images, reads the body back, and posts the comment last.`;
 
 const BODY_FLAGS = /^(?:--body(?:-file)?(?:=|$)|-[bF])/;

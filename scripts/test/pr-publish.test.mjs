@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -7,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { imageProblems, textProblems } from '../pr-publish.mjs';
 
-const script = new URL('../pr-publish.mjs', import.meta.url).pathname;
+const script = fileURLToPath(new URL('../pr-publish.mjs', import.meta.url));
 const BODY = 'A body long enough to describe the change.\n';
 const COMMENT = 'Thanks for the review.\n';
 

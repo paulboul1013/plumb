@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -8,7 +9,7 @@ import { commands } from '../../hooks/shell-commands.mjs';
 import { blockReason as builderReason } from '../../hooks/builder-git-guard.mjs';
 import { blockReason as publishReason } from '../../hooks/pr-publish-guard.mjs';
 
-const root = new URL('../..', import.meta.url).pathname;
+const root = fileURLToPath(new URL('../..', import.meta.url));
 const builder = (command) => builderReason({ agent_type: 'plumb:plumb-builder', tool_name: 'Bash', tool_input: { command } });
 const publish = (command) => publishReason({ tool_name: 'Bash', tool_input: { command } });
 

@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -5,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 
-const script = new URL('../failure-log.mjs', import.meta.url).pathname;
+const script = fileURLToPath(new URL('../failure-log.mjs', import.meta.url));
 const required = ['--context', 'was editing x', '--cause', 'assumed y', '--fix', 'did z'];
 
 function setup() {

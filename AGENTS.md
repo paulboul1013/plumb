@@ -13,6 +13,7 @@ When a correction repeats, enforce it with a check, a script, or a hook, and add
 | Reviews see uncommitted and untracked work: use `scripts/review-diff.mjs <ref>`, never a commits-only `git diff <ref>...HEAD`. | `scripts/review-diff.mjs`, plus a `scripts/check-plugin.mjs` lint |
 | A builder never stashes, resets, restores, or cleans a shared checkout. | `isolation: worktree` in `agents/plumb-builder.md`, plus the PreToolUse hook `hooks/builder-git-guard.mjs` |
 | Remove a builder worktree only after `scripts/worktree-check.mjs` prints `ok` for it. | `scripts/worktree-check.mjs`, called from `skills/orchestrate/SKILL.md` |
+| Entry files check `isMain(import.meta.url)` and paths use `fileURLToPath`, so a symlinked or spaced path still runs them. | `scripts/check-plugin.mjs` |
 | Ticket graphs: blockers numbered lower, every ticket has Acceptance and Proof. | `scripts/check-tickets.mjs` |
 | Classify each full-suite failure as yours, pre-existing, or flaky, with the command that showed it. | Docs only: `skills/implement/SKILL.md`. It is a judgment call that no script can make. |
 | Review runs once per change: a builder skips `review` when the brief or lane reviews it, and an Epic ticket runs only the Spec axis. | Docs only: `skills/implement/SKILL.md`, the Feature and Epic lanes, `skills/orchestrate/SKILL.md`. An agent applies it from its brief and lane, which no script can see. |
