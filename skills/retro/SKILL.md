@@ -26,7 +26,7 @@ Also read the review findings log, which counts each review axis's findings by o
 node "${CLAUDE_PLUGIN_ROOT}/scripts/review-log.mjs" stats
 ```
 
-Once an axis has 10 or more reviews, if most of its findings on code are trivial or wrong, propose narrowing that axis on code changes to what a documented rule or check covers, and keep it unchanged for prose. Fewer than 10 reviews is not enough to decide.
+Once an axis's code line shows 10 or more reviews, if most of those findings are trivial or wrong, propose narrowing that axis on code changes to what a documented rule or check covers, and keep it unchanged for prose. Fewer than 10 reviews is not enough to decide.
 
 ## 2. Pick the strongest fix for each
 

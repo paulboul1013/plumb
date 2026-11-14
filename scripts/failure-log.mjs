@@ -4,7 +4,7 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { appendEvent, currentRepo, git, newId, parseFlags as parseLogFlags, readEvents as readLog } from './jsonl-log.mjs';
+import { appendEvent, currentRepo, git, newId, parseFlags as parseLogFlags, readEvents } from './jsonl-log.mjs';
 
 const USAGE = `usage: failure-log.mjs add --context <text> --cause <text> --fix <text> [--lane L] [--skill S] [--tag T]...
        failure-log.mjs list [--here | --repo <substring>] [--since YYYY-MM-DD] [--open] [--json]
@@ -19,8 +19,6 @@ function usage(message) {
 const logFile = process.env.PLUMB_FAILURE_LOG || join(homedir(), '.plumb', 'failures.jsonl');
 
 const parseFlags = (argv, spec) => parseLogFlags(argv, spec, usage);
-const append = (event) => appendEvent(logFile, event);
-const readEvents = () => readLog(logFile);
 
 function fold(events) {
   const encoded = new Map();
@@ -49,7 +47,7 @@ function add(argv) {
   const id = newId(now);
   const top = git(['rev-parse', '--show-toplevel']);
   const session = process.env.CLAUDE_CODE_SESSION_ID || null;
-  append({
+  appendEvent(logFile, {
     type: 'failure',
     id,
     time: now.toISOString(),
@@ -91,7 +89,7 @@ function list(argv) {
   if (flags.here && flags.repo) usage('--here and --repo cannot be combined');
   if (flags.since && !/^\d{4}-\d\d-\d\d$/.test(flags.since)) usage('--since takes YYYY-MM-DD');
   const here = flags.here ? currentRepo() : undefined;
-  const entries = fold(readEvents())
+  const entries = fold(readEvents(logFile))
     .filter((e) => !flags.here || e.repo === here)
     .filter((e) => !flags.repo || (e.repo ?? '').includes(flags.repo))
     .filter((e) => !flags.since || String(e.time) >= flags.since)
@@ -108,11 +106,11 @@ function encode(argv) {
   if (positional.length !== 1) usage('encode takes exactly one id');
   if (!flags.by?.trim()) usage('--by is required');
   const [id] = positional;
-  if (!fold(readEvents()).some((e) => e.id === id)) {
+  if (!fold(readEvents(logFile)).some((e) => e.id === id)) {
     console.error(`error: no failure with id ${id} in ${logFile}`);
     process.exit(1);
   }
-  append({ type: 'encoded', id, by: flags.by, time: new Date().toISOString() });
+  appendEvent(logFile, { type: 'encoded', id, by: flags.by, time: new Date().toISOString() });
 }
 
 const [command, ...rest] = process.argv.slice(2);
