@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
+import { isMain } from './entry.mjs';
 
 function walk(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -77,7 +78,7 @@ export function checkPlugin(root) {
   return errors;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const errors = checkPlugin(resolve(process.argv[2] ?? join(dirname(new URL(import.meta.url).pathname), '..')));
   for (const e of errors) console.log(e);
   if (errors.length) process.exit(1);

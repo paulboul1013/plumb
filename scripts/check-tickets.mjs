@@ -2,6 +2,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { isMain } from './entry.mjs';
 
 const STATUSES = new Set(['ready', 'in-progress', 'done']);
 
@@ -196,7 +197,7 @@ function run(args) {
   return result;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const args = process.argv.slice(2);
   const { usage, fatal, tickets, frontier, errors } = run(args);
   if (usage) {

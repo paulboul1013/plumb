@@ -3,6 +3,7 @@
 // because a worktree can fall back to the parent's checkout and sweep up its uncommitted work.
 import { readFileSync } from 'node:fs';
 import { commands, gitSubcommand } from './shell-commands.mjs';
+import { isMain } from '../scripts/entry.mjs';
 
 // Each rule gets git's subcommand and its arguments, after git's global options.
 const DESTRUCTIVE = {
@@ -26,7 +27,7 @@ export function blockReason(input) {
   return null;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   if (process.env.PLUMB_HOOK === 'off') process.exit(0);
   let input;
   try { input = JSON.parse(readFileSync(0, 'utf8')); } catch { process.exit(0); }

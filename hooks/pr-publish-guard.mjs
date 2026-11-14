@@ -3,6 +3,7 @@
 // so a failed step cannot leave a comment that describes work GitHub does not show.
 import { readFileSync } from 'node:fs';
 import { commands, gitSubcommand, program } from './shell-commands.mjs';
+import { isMain } from '../scripts/entry.mjs';
 
 const PUBLISH = new URL('../scripts/pr-publish.mjs', import.meta.url).pathname;
 const FIX = `Run: node "${PUBLISH}" --repo R --pr N --body FILE [--comment FILE]. It checks the text and images, reads the body back, and posts the comment last.`;
@@ -24,7 +25,7 @@ export function blockReason(input) {
   return null;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   if (process.env.PLUMB_HOOK === 'off') process.exit(0);
   let input;
   try { input = JSON.parse(readFileSync(0, 'utf8')); } catch { process.exit(0); }

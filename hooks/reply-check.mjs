@@ -6,6 +6,7 @@
 import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { isMain } from '../scripts/entry.mjs';
 
 function readLanes(root) {
   const dir = join(root, 'skills/plumb/lanes');
@@ -118,7 +119,7 @@ export function problems({ text, lane, rigor, steps, evidence = {}, toolUses }) 
 
 const STALE_MS = 14 * 24 * 3600 * 1000;
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   if (process.env.PLUMB_HOOK === 'off') process.exit(0);
   let input = {};
   try { input = JSON.parse(readFileSync(0, 'utf8')); } catch {}

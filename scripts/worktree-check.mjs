@@ -2,6 +2,7 @@
 // What `git worktree remove` would destroy in a worktree: uncommitted work, ignored files that
 // may exist nowhere else, and commits only its HEAD reflog reaches. The last two go with exit 0.
 import { execFileSync } from 'node:child_process';
+import { isMain } from './entry.mjs';
 
 // An ignored path under one of these names is a rebuildable build or cache artifact.
 const DISPOSABLE = new Set([
@@ -37,7 +38,7 @@ export function worktreeHolds(path) {
   return holds;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const paths = process.argv.slice(2);
   if (!paths.length) {
     console.error('usage: worktree-check.mjs <worktree-path>...');

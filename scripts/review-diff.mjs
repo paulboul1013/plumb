@@ -2,6 +2,7 @@
 // Everything a review must see since <ref>: commits, staged and unstaged edits, and new files.
 // `git diff <ref>...HEAD` sees commits only, so uncommitted work used to reach reviewers as an empty diff.
 import { execFileSync, spawnSync } from 'node:child_process';
+import { isMain } from './entry.mjs';
 
 function git(args, cwd) {
   return execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -29,7 +30,7 @@ export function reviewDiff(ref, { cwd = process.cwd(), filesOnly = false } = {})
   return out;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   const args = process.argv.slice(2);
   const ref = args.find((a) => !a.startsWith('--'));
   if (!ref) {

@@ -4,6 +4,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isMain } from '../scripts/entry.mjs';
 
 const STALE_MS = 14 * 24 * 3600 * 1000;
 const run = (cwd, args, input) => execFileSync('git', args, { cwd, input, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'], maxBuffer: 64 << 20 });
@@ -79,7 +80,7 @@ export function changedPaths(cwd, sessionId) {
   return changed.map(([p]) => p);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isMain(import.meta.url)) {
   if (process.env.PLUMB_HOOK === 'off') process.exit(0);
   let input = {};
   try { input = JSON.parse(readFileSync(0, 'utf8')); } catch {}
