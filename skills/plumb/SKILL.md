@@ -112,6 +112,22 @@ Open the final reply with the classification line, then give a short account: wh
 
 Builders do not write evidence in their worktree, because removing a worktree deletes its ignored files. After merging a builder's branch, the parent records its proof in the main checkout: rerun the proof command through `record.mjs`, or save the builder's pasted output with `record.mjs <slug> <name> --note`, and say which one each log is.
 
+## 6. Log your own failures
+
+When you fix a mistake you made, log it right then:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/failure-log.mjs" add --context "..." --cause "..." --fix "..." --lane <lane> --skill <skill> --tag <kind>
+```
+
+Log it when the user corrects you, when a check, `prove`, or `review` catches an error you introduced, or when an approach you chose is thrown away and redone. Do not log a pre-existing failure, a flaky test, or the user changing their mind.
+
+- **Context**: what you were doing and what went wrong.
+- **Cause**: why it went wrong, such as the wrong assumption or the missing information.
+- **Fix**: what you changed.
+
+Write the entry in the user's language. The script fills in the time, repo, branch, commit, and session. The log is a local file outside every repo, so it needs no approval. `/plumb:retro` reads it later to turn recurring mistakes into checks.
+
 ## Skills
 
 Model-invoked. The lanes call these.

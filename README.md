@@ -205,7 +205,7 @@ Epic 車道的流程:
 | 指令 | 用途 | 什麼時候用 |
 | --- | --- | --- |
 | `/plumb:setup` | 設定這個 repo | 每個專案第一次用之前 |
-| `/plumb:retro` | 回顧這個 session,把犯過的錯變成 lint、測試或規範 | 做完一件事之後,尤其是過程不順的時候 |
+| `/plumb:retro` | 回顧這個 session 和跨 repo 的錯誤紀錄(`failure-log.mjs`),把犯過的錯變成 lint、測試或規範 | 做完一件事之後,尤其是過程不順的時候 |
 | `/plumb:handoff` | 寫一份交接檔到 repo 裡的 `.plumb/handoffs/<日期>-<名稱>.md`(不進 git),讓另一個 session 或別人接手 | 換目錄、換工具、交給別人、或要暫停很久 |
 | `/plumb:sharpen` | 用四個問題(專家會多做什麼、最原始的材料、方法、外部檢驗)把任務做深,改寫成更好的 prompt,不動手做 | 開工前覺得需求太淺、太籠統,想先拉高標準再交給 `/plumb:plumb` |
 | `/plumb:ketchup` | 從你最後一則訊息開始,用白話補上發生了什麼,列出每個等你決定的事(附建議、依據、風險)。只讀不改 | 離開一陣子回來、plumb 在背景跑很久,想知道現在怎樣、有什麼要你決定 |
@@ -237,6 +237,9 @@ node scripts/review-diff.mjs <ref>   # review 要看的完整 diff:commit、未 
 node scripts/record.mjs <slug> <name> -- <command>   # 跑驗證指令並存成證據檔 .plumb/<slug>/evidence/<時間>-<name>.log,記下 commit、diff 摘要和 exit code
 node scripts/record.mjs <slug> <name> --note         # 把 stdin(review 報告、截圖路徑)存成同樣的證據檔
 node scripts/record.mjs --digest                     # 印出工作樹對 HEAD 的 diff 摘要,reviewer 拿它比對證據檔的 diff 行
+node scripts/failure-log.mjs add --context <t> --cause <t> --fix <t> [--lane L] [--skill S] [--tag T]   # agent 修正自己的錯時記一筆到跨 repo 的 ~/.plumb/failures.jsonl,自動填時間、repo、branch、commit 和 session
+node scripts/failure-log.mjs list [--here | --repo <字串>] [--since YYYY-MM-DD] [--open] [--json]   # 列出記過的錯,新的在前;--open 只列還沒變成檢查的
+node scripts/failure-log.mjs encode <id> --by <commit 或檔案>   # 標記某筆錯已經變成檢查,之後的 retro 不再列出
 node scripts/check-tickets.mjs <dir> # ticket 編號、依賴、狀態、Acceptance 與 Proof
 node scripts/check-tickets.mjs <dir> --frontier   # 列出現在可以開工的 tickets
 node scripts/check-tickets.mjs --github <owner/repo> <spec-issue> [--frontier]   # 同樣的檢查,讀 GitHub spec issue 的 sub-issue(gh 2.45 以上)
