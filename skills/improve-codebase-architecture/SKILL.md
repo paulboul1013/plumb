@@ -7,10 +7,11 @@ description: Scan a codebase for deepening opportunities, present them as a visu
 
 Surface architectural friction and propose **deepening opportunities**: refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
-This command is _informed_ by the project's domain model and built on a shared design vocabulary:
+This skill is _informed_ by the project's domain model and built on a shared design vocabulary:
 
-- Use the `design` skill's Vocabulary for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion, and don't drift into "component," "service," "API," or "boundary."
-- The domain language in the glossary gives names to good seams; ADRs (where `docs/agents/plumb.md` names them, else `docs/adr/`) record decisions this command should not re-litigate.
+- Use the `design` skill's Vocabulary for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its Principles. Use these terms exactly in every suggestion, and don't drift into "component," "service," "API," or "boundary."
+- The domain language in the glossary gives names to good seams; ADRs, found where the `domain` skill finds them, record decisions this skill should not re-litigate.
+- [HTML-REPORT.md](HTML-REPORT.md) comes from upstream as is: where it says the `/codebase-design` skill or glossary, read the `design` skill's Vocabulary and Principles.
 
 ## Process
 
