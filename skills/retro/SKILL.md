@@ -20,6 +20,14 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/failure-log.mjs" list --open
 
 Prefer a mistake that recurs across entries or repos over a one-off. Open an entry's `transcript` path only when the entry lacks the detail you need.
 
+Also read the review findings log, which counts each review axis's findings by outcome and change kind:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/review-log.mjs" stats
+```
+
+Once an axis has 10 or more reviews, if most of its findings on code are trivial or wrong, propose narrowing that axis on code changes to what a documented rule or check covers, and keep it unchanged for prose. Fewer than 10 reviews is not enough to decide.
+
 ## 2. Pick the strongest fix for each
 
 Try these in order and stop at the first that works. A rule that can be enforced by a tool does not also go in prose.

@@ -61,6 +61,19 @@ Show each axis under its own heading, lightly cleaned. Do not merge or rerank ac
 
 Then fix. Every finding is fixed, or dismissed with a concrete reason.
 
+Once a finding's fix or dismissal is decided, log it once:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/review-log.mjs" add --axis <Standards|Spec|Proof|Adversarial> --outcome <useful|trivial|wrong> --change <code|prose> --summary "<one line>"
+```
+
+- `useful`: the fix changed behavior, an instruction, or the evidence, such as a missing proof added or a test fixed.
+- `trivial`: the fix changed only style, naming, ordering, formatting, or a comment.
+- `wrong`: the finding was dismissed with a reason.
+- `--change prose` when the finding is in a `.md` file, else `code`.
+
+At Light rigor no reviewer is spawned, so nothing is logged.
+
 ## 6. Verify fixes
 
 Run `prove` again. At Light rigor, read your own diff and stop there. If the repo has a build, first confirm it succeeds at the new head: a failed build can leave an old artifact in place that still passes. Then match the verification to the fix, measured since the reviewed commit:
