@@ -187,6 +187,21 @@ test('the plugin check catches a long dash, a bare user-invoked reference, and a
   assert.ok(errors.includes(`skills/plumb/SKILL.md: router's Skills list does not mention "ghost"`));
 });
 
+test('the plugin check reads quoted values and CRLF frontmatter as YAML does', () => {
+  const dir = pluginCopy();
+  const edit = (name, fn) => {
+    const file = join(dir, `skills/${name}/SKILL.md`);
+    writeFileSync(file, fn(readFileSync(file, 'utf8')));
+  };
+  edit('help', (t) => t.replace(/^name: help$/m, 'name: "help"'));
+  edit('retro', (t) => t.replace(/^disable-model-invocation: true$/m, "disable-model-invocation: 'true'"));
+  edit('tdd', (t) => `${t}\nThen run \`retro\`.\n`.replace(/\n/g, '\r\n'));
+  const errors = checkPlugin(dir);
+  // A quoted retro flag that reads as false would drop this error without a word.
+  assert.ok(errors.some((e) => e.startsWith('skills/tdd/SKILL.md') && e.includes('`retro` is user-invoked')), errors.join('\n'));
+  assert.deepEqual(errors.filter((e) => e.startsWith('skills/') && !e.includes('`retro` is user-invoked')), []);
+});
+
 test('the plugin check catches a hard-coded GLOSSARY.md and a commits-only review diff', () => {
   const dir = pluginCopy();
   const builder = join(dir, 'agents/plumb-builder.md');

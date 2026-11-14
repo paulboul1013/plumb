@@ -11,10 +11,12 @@ function walk(dir) {
   });
 }
 
+// Claude Code reads frontmatter as YAML, so CRLF lines and a quoted scalar ("true", 'help') mean what they mean there.
 function frontmatter(text) {
-  const m = text.match(/^---\n([\s\S]*?)\n---\n/);
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if (!m) return null;
-  return Object.fromEntries(m[1].split('\n').map((l) => l.match(/^([\w-]+):\s*(.*)$/)).filter(Boolean).map((x) => [x[1], x[2]]));
+  const unquote = (v) => v.trim().replace(/^(["'])(.*)\1$/, '$2');
+  return Object.fromEntries(m[1].split(/\r?\n/).map((l) => l.match(/^([\w-]+):\s*(.*)$/)).filter(Boolean).map((x) => [x[1], unquote(x[2])]));
 }
 
 export function checkPlugin(root) {
