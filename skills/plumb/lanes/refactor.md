@@ -2,6 +2,8 @@
 
 The structure changes. The behavior does not. If the cleanup finds a bug or a missing feature, split it out and ship the structural change first.
 
+When the target is not known yet, run `improve-codebase-architecture` first.
+
 1. **Pin the behavior.** Before any structure moves, capture current behavior with a characterization test, a snapshot, or an equivalence script. Type checks and lint are not a pin.
 2. **Name the target shape.** Use `design`. State the module layout, the interfaces, and the call graph as if you built it today. The new shape must delete branches, layers, or invalid states. A refactor that adds indirection without deleting anything does not earn its place.
 3. **Subtract first.** Delete dead code, one-caller wrappers, redundant checks, and stale references before you add the new shape.

@@ -72,7 +72,7 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
 
 ## Skills
 
-模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`wayfind`(終點還看不清楚時,畫一張決策票地圖)、`research`(在背景 subagent 讀 repo 外的一手資料並附出處)、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)、`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review`(沒有車道會呼叫這六個)。
+模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`improve-codebase-architecture`(找出可以加深的模組,做成 HTML 報告,選一個後交給 Refactor 車道)、`wayfind`(終點還看不清楚時,畫一張決策票地圖)、`research`(在背景 subagent 讀 repo 外的一手資料並附出處)、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)、`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review`(沒有車道會呼叫這六個)。
 
 只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`、`/plumb:ketchup`。
 
@@ -146,7 +146,7 @@ lane: Bug · rigor: Light (S, two-way) · why: 只改 cart.js 的加總邏輯
 | 你說 | 車道 | agent 會做的事 |
 | --- | --- | --- |
 | 「購物車數量 2 的時候總價算錯」 | Bug | 先做出一個會在這個 bug 上失敗的指令,再找原因、修、證明修好 |
-| 「把 auth 模組拆成兩個檔案,行為不要變」 | Refactor | 先用測試釘住目前行為,刪多餘的東西,再小步搬移,每步都保持測試通過 |
+| 「把 auth 模組拆成兩個檔案,行為不要變」 | Refactor | 先用測試釘住目前行為,刪多餘的東西,再小步搬移,每步都保持測試通過。還不知道要重構哪裡時(「這個 codebase 越來越難改,幫我找重構目標」),先跑 `improve-codebase-architecture` |
 | 「訂單加上折扣碼功能」 | Feature | 對齊需求、設計資料形狀和測試 seam、TDD 實作、實際跑、review |
 | 「我們要做多租戶,先規劃」 | Epic | 完整對齊、寫 spec、切 tickets,再一張一張或平行實作 |
 | 「列表用卡片還是表格比較好?做出來看看」 | Prototype | 在暫存位置做 2 到 4 個可切換的版本,截圖比較,給建議 |
@@ -245,4 +245,4 @@ node --test scripts/test/*.test.mjs# 腳本本身的測試
 
 ## 授權與來源
 
-MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。`wayfind` 和 `research` 改寫自 mattpocock/skills 的 `wayfinder` 和 `research`。`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 這六個 skill 和兩個 thermo subagent 移植自 pstack-claude 0.9.132。`arena`、`interrogate`、`swarm` 的著作權屬於 Lauren Tan,pstack-claude 的修改屬於 Michael Denyer;`thermos`、兩個 thermo-nuclear review skill 和兩個 subagent 的著作權屬於 Cursor(都是 MIT),授權全文在 [docs/licenses/](docs/licenses/)。
+MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。`skills/improve-codebase-architecture/HTML-REPORT.md` 直接取自 mattpocock/skills。`wayfind`、`research`、`improve-codebase-architecture` 改寫自 mattpocock/skills 的 `wayfinder`、`research`、`improve-codebase-architecture`。`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 這六個 skill 和兩個 thermo subagent 移植自 pstack-claude 0.9.132。`arena`、`interrogate`、`swarm` 的著作權屬於 Lauren Tan,pstack-claude 的修改屬於 Michael Denyer;`thermos`、兩個 thermo-nuclear review skill 和兩個 subagent 的著作權屬於 Cursor(都是 MIT),授權全文在 [docs/licenses/](docs/licenses/)。

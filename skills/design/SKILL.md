@@ -16,6 +16,14 @@ Use these words exactly.
 - **Depth.** Behavior per unit of interface. A deep module hides a lot behind a little. A shallow one has an interface almost as big as its body.
 - **Seam.** The place where behavior can change without editing there. Tests live at seams.
 - **Adapter.** The concrete thing that fills a seam.
+- **Leverage.** What callers get from depth: more capability per unit of interface they learn, paid back across every call site and test.
+- **Locality.** What maintainers get from depth: change, bugs, and knowledge concentrate in one place instead of spreading across callers.
+
+Principles:
+
+- **The deletion test.** Imagine deleting the module. If complexity vanishes, it was a pass-through. If it reappears across callers, it earns its place.
+- **The interface is the test surface.** Callers and tests cross the same seam. Needing to test past the interface means the module has the wrong shape.
+- **One adapter means a hypothetical seam, two adapters a real one.** Add a seam only when something actually varies across it.
 
 ## Steps
 

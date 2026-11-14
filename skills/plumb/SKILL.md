@@ -119,6 +119,7 @@ Model-invoked. The lanes call these.
 - `align`: interview the user on decisions, one frontier of questions per round.
 - `domain`: keep the glossary and ADRs current as terms and hard decisions settle.
 - `design`: shape the module (data shape, interface, seam) before code.
+- `improve-codebase-architecture`: scan the hot spots for deepening opportunities, report them as HTML, then align on one for the Refactor lane.
 - `wayfind`: chart a foggy destination as a map of decision tickets and resolve them one at a time.
 - `research`: read primary sources outside the repo in a background subagent and save the cited findings.
 - `spec`: write the agreed design as a spec on the tracker.
