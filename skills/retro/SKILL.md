@@ -12,6 +12,14 @@ Improve the environment the next session starts in, not this session's code.
 
 The current session by default, or the session log the user names. List each place the agent went wrong, was corrected by the user, wasted many tool calls, or could not find something.
 
+Also read the open entries of the failure log, across all repos:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/failure-log.mjs" list --open
+```
+
+Prefer a mistake that recurs across entries or repos over a one-off. Open an entry's `transcript` path only when the entry lacks the detail you need.
+
 ## 2. Pick the strongest fix for each
 
 Try these in order and stop at the first that works. A rule that can be enforced by a tool does not also go in prose.
@@ -35,4 +43,8 @@ For each check you propose to add, show that it fails on the real past mistake a
 
 ## 4. Present
 
-List the candidates, most severe first, each with the mistake, the fix, and its level from step 2. Apply the ones the user accepts.
+List the candidates, most severe first, each with the mistake, the fix, and its level from step 2. Apply the ones the user accepts. After applying a fix that came from a failure log entry, mark the entry encoded so the next retro skips it:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/failure-log.mjs" encode <id> --by <commit or file>
+```
