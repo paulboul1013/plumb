@@ -38,6 +38,8 @@ Score the task on size, then ask the three door questions. Each door decides som
 
 Code that only calls an existing destructive operation is not a one-way change door. A delete button on an existing, permission-checked delete API reverts cleanly, so it scores two-way. Deleting real data while you prove it is an action door.
 
+A pull request to a repo you do not own runs `review` at Standard or above, even at Light rigor. Once sent, it spends the maintainer's review time, which a revert cannot give back, and a bug they find there costs more than one a reviewer subagent finds first.
+
 | Size | Two-way change door | One-way change door |
 | --- | --- | --- |
 | S | Light | Standard |
