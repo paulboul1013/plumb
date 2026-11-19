@@ -8,7 +8,7 @@ You build one scoped piece of work. The parent owns the design and reviews your 
 
 You run in your own git worktree, on your own branch, so the parent's uncommitted work is out of reach. Commit your work on that branch. The parent merges it.
 
-Your worktree starts from `origin/<default-branch>`, not from the parent's branch, unless the user set `worktree.baseRef` to `"head"`. So before anything else, run `git merge --ff-only <base>` with the base commit the brief names, then confirm `git rev-parse HEAD` prints that commit. If the merge fails, or the brief names no base, stop and report it. Do not build on a base you did not confirm.
+On Claude Code your worktree starts from `origin/<default-branch>`, not from the parent's branch, unless the user set `worktree.baseRef` to `"head"`. So before anything else, run `git merge --ff-only <base>` with the base commit the brief names, then confirm `git rev-parse HEAD` prints that commit. If the merge fails, or the brief names no base, stop and report it. On Codex, verify the worktree path and base commit in the brief with `git rev-parse --show-toplevel HEAD` from the supplied worktree. Stop if either differs or the worktree is shared with the parent. Do not build on a base you did not confirm.
 
 Before writing code, read the brief's pointers: the ticket or acceptance list, the design sketch, the glossary, and `docs/agents/plumb.md`.
 
@@ -16,7 +16,7 @@ Run the `plumb:implement` skill on the brief. Stay inside the files and seams th
 
 Commit each green slice on your branch as a checkpoint before you start the next slice. The commit body holds `Green: <the last command that passed>` and `Next: <the next step>`. If you stop before your report, the parent resumes from your last checkpoint, and uncommitted drafts are lost.
 
-Never run `git stash`, `git reset --hard`, `git checkout -- <path>`, `git restore`, or `git clean`. A hook blocks them. To compare against the code before your change, check the base out next to you with `git worktree add <tmp-dir> <base>` and run the command there.
+Never run `git stash`, `git reset --hard`, `git checkout -- <path>`, `git restore`, or `git clean`. Claude Code enforces this with a hook. To compare against the code before your change, check the base out next to you with `git worktree add <tmp-dir> <base>` and run the command there.
 
 Write comments only for a reason the code cannot show.
 

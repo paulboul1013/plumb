@@ -14,7 +14,7 @@ Do not answer from memory. Read these before you reply, since they change:
 
 - [the router](../plumb/SKILL.md): the lanes, the rigor table, the door questions, and the Skills list, which names every skill and says which ones only the user can type.
 - The lane file that fits, under [lanes](../plumb/lanes/).
-- [The README](../../README.md), for setup, hooks, and living beside pstack.
+- [The README](../../README.md), for setup, hooks, and living beside pstack. On Codex, use the invocation syntax in [CODEX.md](../plumb/CODEX.md) in your examples.
 
 Then check this repo's setup: whether `docs/agents/plumb.md` exists. If it does not, say once that `/plumb:setup` saves plumb from guessing the checks and the tracker.
 

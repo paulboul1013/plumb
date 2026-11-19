@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Retro
 
+On Codex, resolve script paths and role briefs using [CODEX.md](../plumb/CODEX.md).
+
 Improve the environment the next session starts in, not this session's code.
 
 ## 1. Read the primary source
@@ -15,7 +17,7 @@ The current session by default, or the session log the user names. List each pla
 Also read the open entries of the failure log, across all repos:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/failure-log.mjs" list --open
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/failure-log.mjs" list --open
 ```
 
 Prefer a mistake that recurs across entries or repos over a one-off. Open an entry's `transcript` path only when the entry lacks the detail you need.
@@ -23,7 +25,7 @@ Prefer a mistake that recurs across entries or repos over a one-off. Open an ent
 Also read the review findings log, which counts each review axis's findings by outcome and change kind:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/review-log.mjs" stats
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/review-log.mjs" stats
 ```
 
 Once an axis's code line shows 10 or more reviews, if most of those findings are trivial or wrong, propose narrowing that axis on code changes to what a documented rule or check covers, and keep it unchanged for prose. Fewer than 10 reviews is not enough to decide.
@@ -54,5 +56,5 @@ For each check you propose to add, show that it fails on the real past mistake a
 List the candidates, most severe first, each with the mistake, the fix, and its level from step 2. Apply the ones the user accepts. After applying a fix that came from a failure log entry, mark the entry encoded so the next retro skips it:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/failure-log.mjs" encode <id> --by <commit or file>
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/failure-log.mjs" encode <id> --by <commit or file>
 ```

@@ -87,8 +87,8 @@ Do not use `--comment` here either, for the same reason as above.
 ## Check the graph
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <spec-issue>
-node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <spec-issue> --frontier
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" --github <Repo> <spec-issue>
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" --github <Repo> <spec-issue> --frontier
 ```
 
 The tickets are the spec issue's sub-issues. A closed ticket is done, an open one with an assignee is in progress, and an open unassigned one is ready. The first command prints one error per line, or `ok: N tickets, M ready now`. `--frontier` prints the ready tickets whose blockers are all closed, one `#<n> <title>` per line. A `gh` failure prints its error and exits 2.

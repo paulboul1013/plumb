@@ -5,11 +5,13 @@ description: "Use for \"interrogate\", \"adversarial review\", \"multi-model rev
 
 # Interrogate
 
+On Codex, follow the platform instructions in [CODEX.md](../plumb/CODEX.md) for role briefs and model selection.
+
 Adversaries try to break a change or a design. A finding survives only when a run proves it. Report the findings. Do not apply fixes.
 
 ## Frame
 
-The scope is what the user names. Otherwise it is the branch diff from its merge base with the base branch, through the working tree. Read it with `node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <base>`. Restate the intent in your own words, in one paragraph, from the user's message, the commits, and the PR description. Ask the user when the intent is unclear.
+The scope is what the user names. Otherwise it is the branch diff from its merge base with the base branch, through the working tree. Read it with `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/review-diff.mjs" <base>`. Restate the intent in your own words, in one paragraph, from the user's message, the commits, and the PR description. Ask the user when the intent is unclear.
 
 ## Fan out
 

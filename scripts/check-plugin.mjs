@@ -32,7 +32,15 @@ export function checkPlugin(root) {
     if (!fm) { errors.push(`${rel(file)}: missing frontmatter`); continue; }
     if (fm.name !== name) errors.push(`${rel(file)}: name "${fm.name}" does not match directory "${name}"`);
     if (!fm.description) errors.push(`${rel(file)}: missing description`);
-    skills.set(name, { userInvoked: fm['disable-model-invocation'] === 'true' });
+    const userInvoked = fm['disable-model-invocation'] === 'true';
+    skills.set(name, { userInvoked });
+
+    const codexPolicy = join(skillsDir, name, 'agents', 'openai.yaml');
+    const explicitOnly = existsSync(codexPolicy)
+      && /^policy:[ \t]*\r?\n[ \t]+allow_implicit_invocation:[ \t]+false[ \t]*\r?$/m.test(readFileSync(codexPolicy, 'utf8'));
+    if (userInvoked !== explicitOnly) {
+      errors.push(`${rel(codexPolicy)}: Codex invocation policy must match disable-model-invocation in SKILL.md`);
+    }
   }
 
   const markdown = [...walk(join(root, 'skills')), ...walk(join(root, 'agents')), ...walk(join(root, 'hooks')), join(root, 'README.md')]

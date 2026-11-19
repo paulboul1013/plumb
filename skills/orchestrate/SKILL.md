@@ -5,19 +5,21 @@ description: Build a whole spec's ticket graph in one run, with parallel builder
 
 # Orchestrate
 
+On Codex, resolve script paths and role briefs using [CODEX.md](../plumb/CODEX.md).
+
 The tickets are a **task graph**, not a list. The **frontier** is every ticket whose blockers are done. Keep the frontier busy.
 
 Talk to subagents through pointers: the spec path, the ticket path, the notes directory, the commits. Do not paste what a pointer already holds.
 
-1. **Read the graph.** For a local tracker, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" <dir>`. For a GitHub tracker, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <spec-issue>`. Stop on any error. Then the same command with `--frontier` lists the tickets ready now.
+1. **Read the graph.** For a local tracker, run `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" <dir>`. For a GitHub tracker, run `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" --github <Repo> <spec-issue>`. Stop on any error. Then the same command with `--frontier` lists the tickets ready now.
 2. **Explore once (optional).** One Explore subagent writes notes on the relevant code and docs to a directory outside the repo that every builder can read, so builders spend their context on building.
 3. **Branch.** Create the integration branch.
-4. **Fan out.** Spawn one `plumb:plumb-builder` subagent per frontier ticket, in the background, each in its own worktree on its own branch. Name the integration tip's commit as the base in each brief: a builder's worktree starts from `origin/<default-branch>`, and the builder fast-forwards to the base you name. Each one runs the `implement` skill on its ticket and merges the integration tip into its branch before reporting. Each brief says this is one ticket of an Epic, so `implement` runs `review` on the Spec axis only. Step 8 still reviews the whole.
+4. **Fan out.** Spawn one `plumb:plumb-builder` subagent per frontier ticket, in the background, each in its own worktree on its own branch. Name the integration tip's commit as the base in each brief: on Claude Code the builder fast-forwards its worktree from `origin/<default-branch>`. On Codex the parent creates the worktree at that base. Each one runs the `implement` skill on its ticket and merges the integration tip into its branch before reporting. Each brief says this is one ticket of an Epic, so `implement` runs `review` on the Spec axis only. Step 8 still reviews the whole.
 5. **Split shared state first.** Two frontier tickets that write the same file do not run in parallel. Split the file, or serialize those two, and say which.
 6. **Merge as they land.** When a builder reports, check its proof output yourself, then merge its branch into the integration branch. Re-run the full checks on the integration tip unless they are recorded for its SHA, and record each command, result, and SHA, so step 8 can reuse them. A red tip stops new merges until it is green. Once the tip is green, close the merged ticket the way the tracker closes work, naming the config's `Repo` as the `spec` skill says, and on GitHub comment first and then close, as [GITHUB.md](../setup/GITHUB.md) says. The frontier counts only closed or `done` tickets, so an open merged ticket would hold back every ticket it blocks.
 7. **Advance.** Each merge can widen the frontier. Spawn builders for the newly ready tickets.
 8. **Review the whole.** When every ticket is done, run `review` on the integration branch against the spec. Give all fixes to one fresh builder, whose brief says the parent reviews.
-9. **Finish.** Run `deliver`. Close any ticket still open, as step 6 says. Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/worktree-check.mjs" <worktree>...` on the builder worktrees, then remove only the ones it prints `ok` for. `git worktree remove` exits 0 while it deletes ignored files such as `.env` and commits only the worktree's HEAD reflog reaches. List each held worktree and its holds in the final reply, and never pass `--force`.
+9. **Finish.** Run `deliver`. Close any ticket still open, as step 6 says. Run `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/worktree-check.mjs" <worktree>...` on the builder worktrees, then remove only the ones it prints `ok` for. `git worktree remove` exits 0 while it deletes ignored files such as `.env` and commits only the worktree's HEAD reflog reaches. List each held worktree and its holds in the final reply, and never pass `--force`.
 
 When a builder stops without a report, resume it from its last checkpoint, as Subagents in the plumb skill says.
 

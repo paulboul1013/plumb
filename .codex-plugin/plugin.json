@@ -1,0 +1,15 @@
+{
+  "name": "plumb",
+  "version": "0.1.0",
+  "description": "Route engineering tasks by size and reversibility, then verify and review the result.",
+  "author": {
+    "name": "paulboul1013"
+  },
+  "license": "MIT",
+  "skills": "./skills/",
+  "hooks": "./hooks/codex.json",
+  "interface": {
+    "displayName": "Plumb",
+    "shortDescription": "Engineering workflows for Codex"
+  }
+}

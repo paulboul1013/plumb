@@ -2,7 +2,7 @@
 // Stop hook for the Finish rule of the plumb skill: the walked todolist in the final reply names every lane step,
 // each done or carrying `adjusted:` or `skip:` with a reason, and at Standard or Strict a step whose lane text hands
 // work to plumb-builder or runs `review` is marked done only when this task spawned that subagent.
-// It reads the Claude Code JSONL transcript. Any other transcript (Codex) fails to classify, so the hook passes.
+// Claude Code supplies transcript evidence. Codex checks the last reply through its Stop payload.
 import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -38,13 +38,14 @@ const blocks = (e) => (Array.isArray(e.message?.content) ? e.message.content : [
 const texts = (e) => blocks(e).filter((b) => b?.type === 'text').map((b) => b.text);
 const isRealUserTurn = (e) => e.type === 'user'
   && (typeof e.message?.content === 'string' || blocks(e).some((b) => b?.type === 'text'));
+const lanePattern = /lane:\s*(\w+)\s*·\s*rigor:\s*(\w+)/g;
 
 export function classification(entries) {
   let found = null;
   for (const e of main(entries)) {
     if (e.type !== 'assistant') continue;
     for (const text of texts(e)) {
-      for (const m of text.matchAll(/lane:\s*(\w+)\s*·\s*rigor:\s*(\w+)/g)) found = { lane: m[1], rigor: m[2] };
+      for (const m of text.matchAll(lanePattern)) found = { lane: m[1], rigor: m[2] };
     }
   }
   return found;
@@ -97,9 +98,9 @@ export function stepStatuses(text, steps) {
 // The plumb skill puts lane steps in a checklist only in the final reply, so two checklist steps mark one.
 const isWalkedList = (statuses) => Object.values(statuses).filter((s) => s.status !== 'missing').length >= 2;
 
-export function problems({ text, lane, rigor, steps, evidence = {}, toolUses }) {
+export function problems({ text, lane, rigor, steps, evidence = {}, toolUses, requireWalkedList = false }) {
   const statuses = stepStatuses(text, steps);
-  if (!isWalkedList(statuses)) return [];
+  if (!requireWalkedList && !isWalkedList(statuses)) return [];
   const found = [];
   for (const [step, { status, reason }] of Object.entries(statuses)) {
     if (status === 'missing') found.push(`${lane} step "${step}" is missing from the walked list`);
@@ -120,6 +121,24 @@ export function problems({ text, lane, rigor, steps, evidence = {}, toolUses }) 
 
 const STALE_MS = 14 * 24 * 3600 * 1000;
 
+function checkReply(input, root, codex) {
+  if (codex) {
+    const text = input.last_assistant_message;
+    if (typeof text !== 'string') return [];
+    const match = [...text.matchAll(lanePattern)].at(-1);
+    if (!match) return [];
+    const [, lane, rigor] = match;
+    return problems({ text, lane, rigor, steps: laneSteps(root)[lane] ?? [], requireWalkedList: true });
+  }
+
+  const entries = readFileSync(input.transcript_path, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l));
+  const c = classification(entries);
+  const steps = c && laneSteps(root)[c.lane];
+  if (!steps?.length) return [];
+  const task = taskEntries(entries, steps);
+  return problems({ text: replyText(entries), lane: c.lane, rigor: c.rigor, steps, evidence: laneEvidence(root)[c.lane], toolUses: toolUses(task) });
+}
+
 if (isMain(import.meta.url)) {
   if (process.env.PLUMB_HOOK === 'off') process.exit(0);
   let input = {};
@@ -127,13 +146,8 @@ if (isMain(import.meta.url)) {
   try {
     // No early exit on stop_hook_active: when the finish gate blocked first, the rewritten reply still needs checking.
     // The once-per-state marker below is what keeps the session from being trapped.
-    const entries = readFileSync(input.transcript_path, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l));
-    const c = classification(entries);
     const root = fileURLToPath(new URL('..', import.meta.url));
-    const steps = c && laneSteps(root)[c.lane];
-    if (!steps?.length) process.exit(0);
-    const task = taskEntries(entries, steps);
-    const found = problems({ text: replyText(entries), lane: c.lane, rigor: c.rigor, steps, evidence: laneEvidence(root)[c.lane], toolUses: toolUses(task) });
+    const found = checkReply(input, root, process.argv[2] === '--codex');
     if (!found.length) process.exit(0);
     // The marker lives in the temp dir, not the git dir as the finish gate's does, because a reply can need checking
     // outside a git repo. Old markers are pruned here for the same reason.

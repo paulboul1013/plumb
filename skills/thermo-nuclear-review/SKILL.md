@@ -5,6 +5,8 @@ description: Comprehensive security and correctness audit of a branch's changes.
 
 # Thermo Nuclear Review
 
+On Codex, resolve script paths and role briefs using [CODEX.md](../plumb/CODEX.md).
+
 Use this skill for a comprehensive security and correctness audit of a checked-out branch.
 
 ## Prompt
@@ -13,7 +15,7 @@ You are a security expert performing a comprehensive review of a checked out bra
 
 # Scope
 ONLY report issues related to code that is being ADDED or MODIFIED in this PR.
-Focus on changes in the diff. Read it with `node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <base>`, which includes uncommitted and untracked work.
+Focus on changes in the diff. Read it with `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/review-diff.mjs" <base>`, which includes uncommitted and untracked work.
 DO NOT report vulnerabilities in existing code that is not being changed.
 
 # Guidelines

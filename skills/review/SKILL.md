@@ -5,6 +5,8 @@ description: Review a diff since a fixed point on separate axes (Standards, Spec
 
 # Review
 
+On Codex, follow the platform instructions in [CODEX.md](../plumb/CODEX.md) for role briefs and model selection.
+
 Each axis runs in its own subagent so one axis cannot mask another. Code that follows every standard can still build the wrong thing.
 
 ## 1. Pin the fixed point
@@ -12,7 +14,7 @@ Each axis runs in its own subagent so one axis cannot mask another. Code that fo
 Use the ref the user or lane gave (a SHA, branch, tag, or `main`). The diff command is always:
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <ref>
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/review-diff.mjs" <ref>
 ```
 
 It covers commits since `<ref>`, staged and unstaged edits, and new untracked files, so work that is not committed yet still gets reviewed. Do not hand reviewers `git diff <ref>...HEAD`: it sees commits only, and returns nothing for uncommitted work. Run the command once here. It fails on a bad ref or an empty change, so the problem shows up now, not inside the subagents. Add `--files` for the list of changed paths. Note `git log <ref>..HEAD --oneline`.
@@ -22,11 +24,11 @@ It covers commits since `<ref>`, staged and unstaged edits, and new untracked fi
 - **Spec.** The ticket, the spec, or the acceptance list. Look in commit messages for issue refs, then the lane's context, then `.plumb/` and `docs/`. If there is none, the Spec axis reports "no spec" and skips.
 - **Standards.** Every file in the repo that says how code is written: `CODING_STANDARDS.md`, `CONTRIBUTING.md`, lint configs, ADRs. Plus the smell baseline below.
 - **Proof.** The `prove` output for this change.
-- **Check results.** Before spawning reviewers, the parent runs each of the repo's checks once at HEAD and records each check's exact command, its result, and the commit SHA it ran on. Skip a check already recorded for that command and SHA. If the tree is dirty, run the checks on it. Run each check through `node "${CLAUDE_PLUGIN_ROOT}/scripts/record.mjs" <slug> <name> -- <command>`, as the `prove` skill says. Its log is that record: the `cmd`, `exit`, and `sha` header lines hold the command, the result, and the commit, and the `diff` line holds `clean` or the digest of the tree against HEAD. Give this source, with each log path, to every axis. A recorded check result is evidence, unlike the verdicts step 3 forbids.
+- **Check results.** Before spawning reviewers, the parent runs each of the repo's checks once at HEAD and records each check's exact command, its result, and the commit SHA it ran on. Skip a check already recorded for that command and SHA. If the tree is dirty, run the checks on it. Run each check through `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/record.mjs" <slug> <name> -- <command>`, as the `prove` skill says. Its log is that record: the `cmd`, `exit`, and `sha` header lines hold the command, the result, and the commit, and the `diff` line holds `clean` or the digest of the tree against HEAD. Give this source, with each log path, to every axis. A recorded check result is evidence, unlike the verdicts step 3 forbids.
 
 ## 3. Run the axes in parallel
 
-Run the axes the router's rigor table names, or the axes the caller limits this review to. With neither, run all three. At Light rigor, read your own diff instead of spawning reviewers. Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. If subagents are not allowed, run each axis in a fresh context that sees only the diff, that axis's sources, and the rules in `${CLAUDE_PLUGIN_ROOT}/agents/plumb-reviewer.md`, as the plumb skill's Subagents section says. Give each the `review-diff.mjs` command from step 1, the commit list, and only its own sources. Do not add your own verdict: no "this looks fine", no "I already handled X", no list of what you think is risky. The reviewer judges the diff from the sources alone. Each report stays under 400 words and quotes the hunk or spec line for every finding.
+Run the axes the router's rigor table names, or the axes the caller limits this review to. With neither, run all three. At Light rigor, read your own diff instead of spawning reviewers. Spawn one `plumb:plumb-reviewer` subagent per axis in the same message. If subagents are not allowed, run each axis in a fresh context that sees only the diff, that axis's sources, and the rules in `${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/agents/plumb-reviewer.md`, as the plumb skill's Subagents section says. Give each the `review-diff.mjs` command from step 1, the commit list, and only its own sources. Do not add your own verdict: no "this looks fine", no "I already handled X", no list of what you think is risky. The reviewer judges the diff from the sources alone. Each report stays under 400 words and quotes the hunk or spec line for every finding.
 
 - **Standards.** Every breach of a documented standard, citing the file and rule. Every baseline smell, labelled as a judgement call. A documented repo standard overrides the baseline. Skip what tooling already enforces.
 - **Spec.** Requirements missing or partial. Behavior nobody asked for. Requirements that look done but are done wrong.
@@ -55,7 +57,7 @@ Each is a hint, never a hard rule.
 
 ## 5. Report
 
-Save each reviewer's report as it came back: `node "${CLAUDE_PLUGIN_ROOT}/scripts/record.mjs" <slug> review-<axis> --note`, with the report on stdin.
+Save each reviewer's report as it came back: `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/record.mjs" <slug> review-<axis> --note`, with the report on stdin.
 
 Show each axis under its own heading, lightly cleaned. Do not merge or rerank across axes. End with one line per axis: the count and the worst finding.
 
@@ -64,7 +66,7 @@ Then fix. Every finding is fixed, or dismissed with a concrete reason.
 Once a finding's fix or dismissal is decided, log it once:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/review-log.mjs" add --axis <Standards|Spec|Proof|Adversarial> --outcome <useful|trivial|wrong> --change <code|prose> --summary "<one line>"
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/review-log.mjs" add --axis <Standards|Spec|Proof|Adversarial> --outcome <useful|trivial|wrong> --change <code|prose> --summary "<one line>"
 ```
 
 - `useful`: the fix changed behavior, an instruction, or the evidence, such as a missing proof added or a test fixed.

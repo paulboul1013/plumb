@@ -5,6 +5,8 @@ description: Show a change works by checking the real artifact on the surface a 
 
 # Prove
 
+On Codex, resolve script paths and role briefs using [CODEX.md](../plumb/CODEX.md).
+
 Check the real thing directly. Tests show the branches you thought of. A live run shows what the user gets.
 
 ## Pick the surface
@@ -34,7 +36,7 @@ Read `docs/agents/plumb.md` for how to drive the app. Otherwise pick by what cha
 The parent runs each proof command through the recorder, so the output survives a cleared temp dir:
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/record.mjs" <slug> <name> -- <command> [args...]
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/record.mjs" <slug> <name> -- <command> [args...]
 ```
 
 `<slug>` is the feature or ticket slug, and `<name>` names the check, such as `unit` or `cli-total`. It runs the command from the repo root, streams its output as usual, keeps its exit code, and saves `.plumb/<slug>/evidence/<time>-<name>.log` with the command, the commit, the diff digest, and the exit code above the output. The last stderr line prints the path. `.plumb/` stays out of git through `.git/info/exclude`. Save a screenshot under the same `.plumb/<slug>/evidence/` directory.

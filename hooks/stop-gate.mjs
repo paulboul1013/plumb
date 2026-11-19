@@ -84,7 +84,7 @@ if (isMain(import.meta.url)) {
   if (process.env.PLUMB_HOOK === 'off') process.exit(0);
   let input = {};
   try { input = JSON.parse(readFileSync(0, 'utf8')); } catch {}
-  const cwd = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  const cwd = (process.argv[2] === '--codex' ? input.cwd : process.env.CLAUDE_PROJECT_DIR) || process.cwd();
   try {
     if (process.argv[2] === 'record') {
       record(cwd, input.session_id, input.source);

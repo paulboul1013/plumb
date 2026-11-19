@@ -5,12 +5,14 @@ description: "Launch both thermo-nuclear review subagents in parallel, then synt
 
 # Thermos
 
+On Codex, follow the platform instructions in [CODEX.md](../plumb/CODEX.md) for role briefs and model selection.
+
 Run the two thermo review passes as async background subagents in parallel, then synthesize their results.
 
 ## Workflow
 
 1. Determine the review scope from the user request, PR, current branch, or relevant changed files.
-2. Gather the diff with `node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <base>`, which includes uncommitted and untracked work, and any file/context excerpts needed for reviewers to evaluate the change without guessing.
+2. Gather the diff with `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/review-diff.mjs" <base>`, which includes uncommitted and untracked work, and any file/context excerpts needed for reviewers to evaluate the change without guessing.
 3. Launch both subagents in the same message with `run_in_background: true`:
    - `subagent_type: "plumb:thermo-nuclear-review-subagent"` for bugs, breakages, security, devex regressions, feature-flag leaks, and other branch-audit risks.
    - `subagent_type: "plumb:thermo-nuclear-code-quality-review-subagent"` for maintainability, structure, file-size growth, spaghetti, abstractions, and codebase-health risks.

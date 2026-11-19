@@ -80,7 +80,30 @@ Agents:`plumb-builder`(實作單一 ticket)、`plumb-reviewer`(不改 repo,一�
 
 ## 安裝
 
-先把這個 repo clone 到本機,再把 clone 下來的目錄加成 marketplace:
+### Codex
+
+在 Plumb checkout 根目錄執行：
+
+```bash
+codex plugin marketplace add "$PWD"
+codex plugin add plumb@plumb-local
+```
+
+開啟新 Codex session，在技能選單選 Plumb 的 `help`，或輸入 `$plumb:help`。要啟用自動路由與 hooks，在 Codex CLI 用 `/hooks` 檢查並信任 Plumb 的 hook 定義。原本若用同名的遠端 marketplace，可以用隔離的 Codex 設定測試這個 checkout。
+
+| 項目 | Claude Code | Codex |
+| --- | --- | --- |
+| 套件入口 | `.claude-plugin/` | `.codex-plugin/plugin.json` 和 `.agents/plugins/marketplace.json` |
+| 手動呼叫的 skills | `disable-model-invocation` | `agents/openai.yaml` 的 `allow_implicit_invocation` |
+| 路由與腳本 | SessionStart 注入指示，腳本用 `CLAUDE_PLUGIN_ROOT` | SessionStart 以 JSON 注入指示與安裝路徑，hook 用 `PLUGIN_ROOT` |
+| Stop | 工作樹基準、回覆清單、子代理呼叫紀錄 | 工作樹基準和最後回覆的清單 |
+| 子代理 | 插件註冊角色，builder 自動拿到 worktree 與 Git hook 防護 | 將共用角色檔交給 Codex 子代理，由父代理先建立 builder worktree |
+
+Codex 的 PR 發佈防護使用同一份 Bash hook。子代理與腳本路徑的細節見 [Codex 工作流程](skills/plumb/CODEX.md)。[OpenAI 插件封裝文件](https://developers.openai.com/plugins/build/plugins)、[Codex hooks 文件](https://learn.chatgpt.com/docs/hooks)。
+
+### Claude Code
+
+先把這個 repo clone 到本機，再把 clone 下來的目錄加成 marketplace。
 
 ```bash
 git clone https://github.com/paulboul1013/plumb.git plumb
@@ -116,7 +139,7 @@ pstack 的 skill(`arena`、`interrogate` 等)關掉 hook 後仍可手動使用�
 
 ### 1. 每個專案先設定一次
 
-在專案目錄開 Claude Code,輸入:
+在專案目錄開啟 Codex 或 Claude Code。Codex 從技能選單選 Plumb 的 setup，或輸入 `$plumb:setup`。Claude Code 輸入：
 
 ```
 /plumb:setup

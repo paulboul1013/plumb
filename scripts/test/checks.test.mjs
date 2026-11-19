@@ -169,6 +169,12 @@ test('the shipped plugin passes its own checks', () => {
   assert.deepEqual(checkPlugin(root), []);
 });
 
+test('a user-invoked skill needs an explicit-only Codex policy', () => {
+  const dir = pluginCopy();
+  writeFileSync(join(dir, 'skills/retro/agents/openai.yaml'), 'policy:\n  allow_implicit_invocation: true\n');
+  assert.ok(checkPlugin(dir).some((e) => e.startsWith('skills/retro/agents/openai.yaml:')));
+});
+
 function pluginCopy() {
   const dir = mkdtempSync(join(tmpdir(), 'plugin-'));
   for (const p of ['skills', 'agents', 'hooks', '.claude-plugin', 'README.md']) cpSync(join(root, p), join(dir, p), { recursive: true });

@@ -5,6 +5,8 @@ description: "Spawn N parallel candidates at the same task, pick a base, graft t
 
 # Arena
 
+On Codex, follow the platform instructions in [CODEX.md](../plumb/CODEX.md) for role briefs and model selection.
+
 Open a todolist with one entry per phase (Frame, Fan out, Cross-judge, Pick, Graft, Verify) before launching anything.
 
 ## Phase A: Frame

@@ -5,6 +5,8 @@ description: Chart a foggy destination as a map of decision tickets, then resolv
 
 # Wayfind
 
+On Codex, resolve script paths and role briefs using [CODEX.md](../plumb/CODEX.md).
+
 Some work is too big for one session and wrapped in fog: the way from here to the **destination** is not visible yet. Wayfinding finds that way. It does not charge at the destination.
 
 The output is decisions, not code. A **map** lists the decisions made so far. Each open question is a **decision ticket**: a ticket whose output is a decision, not a slice of a build. The map is done when nothing is left to decide, and the Epic lane goes on to its step 2.
@@ -105,8 +107,8 @@ Follow [GITHUB.md](../setup/GITHUB.md) for every command: creating the labels on
 After every change to the map or its tickets, run the check and fix every line it prints:
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" .plumb/<slug>/decisions
-node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <map-issue>
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" .plumb/<slug>/decisions
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" --github <Repo> <map-issue>
 ```
 
 It checks each ticket's type, Question, and Resolution, the blocking order, and that the map has a Destination and a pointer to every done and every out-of-scope ticket. `--frontier` lists the tickets ready to start.

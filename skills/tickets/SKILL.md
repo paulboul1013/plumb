@@ -5,6 +5,8 @@ description: Split a spec or plan into tracer-bullet tickets, each a thin vertic
 
 # Tickets
 
+On Codex, resolve script paths and role briefs using [CODEX.md](../plumb/CODEX.md).
+
 Break the work into **tracer bullets**: thin slices that each cut through every layer and end in something a person can see working.
 
 ## Rules for a slice
@@ -29,7 +31,7 @@ Break the work into **tracer bullets**: thin slices that each cut through every 
 One file per ticket at `.plumb/<feature-slug>/tickets/<NN>-<slug>.md`, numbered from `01` with blockers first, so every blocker has a lower number. Then run:
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" .plumb/<feature-slug>/tickets
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" .plumb/<feature-slug>/tickets
 ```
 
 Fix every line it prints. The same script with `--frontier` lists the tickets ready to start.
@@ -62,7 +64,7 @@ One issue per ticket, blockers first, so later tickets can reference real ids. U
 On GitHub, follow [GITHUB.md](../setup/GITHUB.md): create the blockers first, attach each ticket as a sub-issue of the spec issue, and add its blocking links. Each body holds the `## Build`, `## Acceptance`, and `## Proof` sections of the local template; the tracker holds the title, blockers, and status. Then run:
 
 ```
-node "${CLAUDE_PLUGIN_ROOT}/scripts/check-tickets.mjs" --github <Repo> <spec-issue>
+node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-tickets.mjs" --github <Repo> <spec-issue>
 ```
 
 Fix every line it prints.

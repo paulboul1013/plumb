@@ -5,13 +5,15 @@ description: Run an extremely strict maintainability review for abstraction qual
 
 # Thermo-Nuclear Code Quality Review
 
+On Codex, resolve script paths and role briefs using [CODEX.md](../plumb/CODEX.md).
+
 Use this skill for an unusually strict review focused on implementation quality, maintainability, abstraction quality, and codebase health.
 
 Above all, this skill should push the reviewer to be **ambitious** about code structure. Do not merely identify local cleanup opportunities. Actively search for "code judo" moves: restructurings that preserve behavior while making the implementation dramatically simpler, smaller, more direct, and more elegant.
 
 ## Core Prompt
 
-Read the diff with `node "${CLAUDE_PLUGIN_ROOT}/scripts/review-diff.mjs" <base>`, which includes uncommitted and untracked work. Start from this baseline:
+Read the diff with `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/review-diff.mjs" <base>`, which includes uncommitted and untracked work. Start from this baseline:
 
 > Perform a deep code quality audit of the current branch's changes.
 > Rethink how to structure / implement the changes to meaningfully improve code quality without impacting behavior.

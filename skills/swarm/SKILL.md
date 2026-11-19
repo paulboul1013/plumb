@@ -5,6 +5,8 @@ description: "Fan out N parallel workers, drain them, and return one report. Use
 
 # Swarm
 
+On Codex, follow the platform instructions in [CODEX.md](../plumb/CODEX.md) for role briefs and model selection.
+
 ## Start
 
 Open a todolist with one entry per phase before launching anything.
