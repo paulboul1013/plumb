@@ -15,6 +15,7 @@ Read what exists. Do not assume.
 - `git remote -v`: GitHub, GitLab, or none.
 - `CLAUDE.md`, `AGENTS.md`, and any existing `## Agent skills` block.
 - The glossary under any name: `GLOSSARY.md`, `GLOSSARY-MAP.md`, `CONTEXT.md`, `docs/glossary*`. Also `docs/adr/`, and monorepo signals such as workspaces or `packages/*`.
+- An existing wiki: `docs/wiki/`, `wiki/`, or a folder that `CLAUDE.md` or `AGENTS.md` names and that holds an `index.md` of interlinked pages.
 - The check commands: `package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, the CI workflow. Find typecheck, lint, the single-file test, and the full suite. The full suite is what CI runs. Run each once to confirm it works.
 - How the app runs: the dev server command, the port, the CLI entry point, an existing project verify skill.
 
@@ -47,6 +48,7 @@ Ready label: <ready-for-agent>
 Glossary: `<path, such as GLOSSARY.md or CONTEXT.md>`
 ADRs: `<docs/adr/ or none>`
 Layout: <single context | multi-context via GLOSSARY-MAP.md>
+Wiki: <path, or none until the first page>
 ```
 
 A GitHub or GitLab tracker needs a reachable repo. When the user picks one and no `git remote` points at that host, ask for the repo URL and wire it up (`git init` if needed, then `git remote add origin <url>`) before going further. It is done when `gh repo view --json nameWithOwner` (or `glab repo view`) prints the project from inside this directory. If it cannot, stop and tell the user what is missing. If the repo is a fork (`gh repo view --json isFork,parent`, or, on GitLab, a `forked_from_project` on the project), issues go to the user's own repo, not the upstream parent, unless the user says otherwise. Record that repo as `Repo:`.

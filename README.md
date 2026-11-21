@@ -72,7 +72,7 @@ align + domain ─► spec ─► tickets ─► check-tickets.mjs
 
 ## Skills
 
-模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`improve-codebase-architecture`(找出可以加深的模組,做成 HTML 報告,選一個後交給 Refactor 車道)、`wayfind`(終點還看不清楚時,畫一張決策票地圖)、`research`(在背景 subagent 讀 repo 外的一手資料並附出處)、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)、`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review`(沒有車道會呼叫這六個)。
+模型可自動呼叫:`plumb`(路由)、`align`、`domain`、`design`、`improve-codebase-architecture`(找出可以加深的模組,做成 HTML 報告,選一個後交給 Refactor 車道)、`wayfind`(終點還看不清楚時,畫一張決策票地圖)、`research`(在背景 subagent 讀 repo 外的一手資料並附出處)、`wiki`(把 repo 的架構與慣例寫成標日期、附 commit 的 wiki 頁,下個 session 不必重新摸索)、`spec`、`tickets`、`implement`、`orchestrate`、`tdd`、`diagnose`、`prove`、`review`、`deliver`、`trail`、`help`(也可以打 `/plumb:help`)、`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review`(沒有車道會呼叫這六個)。
 
 只有使用者能呼叫:`/plumb:setup`、`/plumb:retro`、`/plumb:handoff`、`/plumb:sharpen`、`/plumb:ketchup`。
 
@@ -271,4 +271,4 @@ node --test scripts/test/*.test.mjs# 腳本本身的測試
 
 ## 授權與來源
 
-MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。`skills/improve-codebase-architecture/HTML-REPORT.md` 取自 mattpocock/skills,只在 Mermaid 初始化加上 `deterministicIds: true`,避免多張圖在同一毫秒渲染時 id 相撞、畫進同一個框。`wayfind`、`research`、`improve-codebase-architecture` 改寫自 mattpocock/skills 的 `wayfinder`、`research`、`improve-codebase-architecture`。`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 這六個 skill 和兩個 thermo subagent 移植自 pstack-claude 0.9.132。`arena`、`interrogate`、`swarm` 的著作權屬於 Lauren Tan,pstack-claude 的修改屬於 Michael Denyer;`thermos`、兩個 thermo-nuclear review skill 和兩個 subagent 的著作權屬於 Cursor(都是 MIT),授權全文在 [docs/licenses/](docs/licenses/)。
+MIT。部分內容改寫自 mattpocock/skills(MIT,Matt Pocock)和 cursor/plugins 的 pstack(MIT,Lauren Tan)。`skills/tdd/tests.md`、`skills/tdd/mocking.md`、`skills/domain/GLOSSARY-FORMAT.md`、`skills/domain/ADR-FORMAT.md` 直接取自 mattpocock/skills。`skills/improve-codebase-architecture/HTML-REPORT.md` 取自 mattpocock/skills,只在 Mermaid 初始化加上 `deterministicIds: true`,避免多張圖在同一毫秒渲染時 id 相撞、畫進同一個框。`wayfind`、`research`、`improve-codebase-architecture` 改寫自 mattpocock/skills 的 `wayfinder`、`research`、`improve-codebase-architecture`。`wiki` 改寫自 mattpocock/skills `skills/in-progress/chief-of-staff/SKILL.md` 的 Wiki 段落。`arena`、`interrogate`、`swarm`、`thermos`、`thermo-nuclear-review`、`thermo-nuclear-code-quality-review` 這六個 skill 和兩個 thermo subagent 移植自 pstack-claude 0.9.132。`arena`、`interrogate`、`swarm` 的著作權屬於 Lauren Tan,pstack-claude 的修改屬於 Michael Denyer;`thermos`、兩個 thermo-nuclear review skill 和兩個 subagent 的著作權屬於 Cursor(都是 MIT),授權全文在 [docs/licenses/](docs/licenses/)。

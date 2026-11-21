@@ -130,6 +130,7 @@ Model-invoked. The lanes call these.
 - `improve-codebase-architecture`: find deepening opportunities, report them as HTML, align on one for the Refactor lane.
 - `wayfind`: chart a foggy destination as decision tickets and resolve them one at a time.
 - `research`: read primary sources outside the repo in a background subagent and save cited findings.
+- `wiki`: read and file dated, commit-cited pages about the repo, so the next session does not re-derive it.
 - `spec`: write the agreed design as a spec on the tracker.
 - `tickets`: split a spec into tracer-bullet tickets with blocking edges.
 - `implement`: build one ticket or feature test-first, then prove and review.
