@@ -5,13 +5,13 @@ description: Route an engineering task to the right lane and rigor before work s
 
 # Plumb
 
-Every task runs one **lane** at one **rigor**. The lane is the sequence of steps. The rigor sets how heavy each step is. Classify first, then work the lane. On Codex, read [CODEX.md](CODEX.md) for skill invocation, script paths, and subagent setup.
+Every task runs one **lane** (the steps) at one **rigor** (how heavy each step is). Classify first, then work the lane. On Codex, read [CODEX.md](CODEX.md) for skill invocation, script paths, and subagent setup.
 
-Read `docs/agents/plumb.md` if it exists. It names the issue tracker, the check commands, how to drive the app, and where the glossary lives. Treat any state claim in it, such as a count, a current phase, or a "now", as a lead to check against the repo, not a fact. A claim dated with a commit older than HEAD is history.
+Read `docs/agents/plumb.md` if it exists: tracker, check commands, how to drive the app, glossary location. Its state claims (a count, a phase, a "now") are leads to check against the repo. A claim dated with a commit older than HEAD is history.
 
-If it is missing, infer what the lane needs from the repo: `package.json` scripts or the build file, the CI workflow, and `AGENTS.md` or `CLAUDE.md`. For checks, run what CI runs. When CI does not settle it, run the most complete command, such as `npm test`, never a subset of it. Print each inferred value on the line after the classification, with its source, for example `checks (from .github/workflows/ci.yml): npm test`. Suggest `/plumb:setup` once in the final reply so the next run does not have to guess.
+If it is missing, infer from `package.json` scripts or the build file, the CI workflow, and `AGENTS.md` or `CLAUDE.md`. For checks, run what CI runs, else the most complete command, such as `npm test`, never a subset of it. Print each inferred value with its source on the line after the classification, such as `checks (from .github/workflows/ci.yml): npm test`, and suggest `/plumb:setup` once in the final reply.
 
-**The glossary** is the repo's existing domain-language file, whatever its name. Look for `GLOSSARY-MAP.md`, `GLOSSARY.md`, `CONTEXT.md`, `docs/glossary*`, and a glossary path in `docs/agents/plumb.md`, `AGENTS.md`, or `CLAUDE.md`. Use the first one that defines domain terms. Create `GLOSSARY.md` only when none exists. Every skill below that says "the glossary" means this file.
+**The glossary** is the repo's existing domain-language file, whatever its name. Look for `GLOSSARY-MAP.md`, `GLOSSARY.md`, `CONTEXT.md`, `docs/glossary*`, and a glossary path in `docs/agents/plumb.md`, `AGENTS.md`, or `CLAUDE.md`, and use the first one that defines domain terms. Create `GLOSSARY.md` only when none exists. Every skill that says "the glossary" means this file.
 
 ## 1. Pick the lane
 
@@ -29,16 +29,16 @@ Take the first row that matches.
 
 ## 2. Set the rigor
 
-Score the task on size, then ask the three door questions. Each door decides something different, so answer each one on its own.
+Score the size, then answer each door question on its own.
 
-- **Size.** S stays inside one module. M crosses a module boundary or changes a signature that other files call. L spans several subsystems or sessions.
-- **Change door.** Does reverting this change restore the old state? Two-way means yes. One-way means no: a schema or data migration that has run, a file format or public API that others already read, anything published or sent by the shipped code, or code for auth, security, or money, where a bug can leak or lose something a revert cannot bring back. Only this door sets the rigor in the table below.
-- **Design door.** Is the shape hard to change later, even though the code reverts? A schema, a public API, a file format, a permission model, or a name other teams will depend on. A design door runs `design` with two or three competing shapes at any rigor, and offers an ADR through `domain`.
-- **Action door.** Will you take an irreversible action while doing the task? Deleting data, deploying, force-pushing a shared branch, merging, or sending a message. An action door does not raise the rigor. It adds a gate: stop and ask before that action (section 4). Prefer a copy, such as test data you created yourself.
+- **Size.** S stays inside one module. M crosses a module boundary or changes a signature other files call. L spans several subsystems or sessions.
+- **Change door.** Two-way if reverting restores the old state. One-way if not: a migration that has run, a file format or public API others already read, anything the shipped code publishes or sends, or auth, security, or money code. Only this door sets the rigor.
+- **Design door.** A shape hard to change later even though the code reverts: a schema, public API, file format, permission model, or a name other teams depend on. Run `design` with two or three competing shapes at any rigor, and offer an ADR through `domain`.
+- **Action door.** An irreversible action during the task (section 4). It does not raise the rigor. It adds a stop-and-ask gate before that action. Prefer a copy, such as test data you created.
 
-Code that only calls an existing destructive operation is not a one-way change door. A delete button on an existing, permission-checked delete API reverts cleanly, so it scores two-way. Deleting real data while you prove it is an action door.
+Calling an existing destructive operation is not a one-way change door: a delete button on an existing, permission-checked delete API is two-way. Deleting real data while you prove it is an action door.
 
-A pull request to a repo you do not own runs `review` at Standard or above, even at Light rigor. Once sent, it spends the maintainer's review time, which a revert cannot give back, and a bug they find there costs more than one a reviewer subagent finds first.
+A pull request to a repo you do not own runs `review` at Standard or above, even at Light rigor.
 
 | Size | Two-way change door | One-way change door |
 | --- | --- | --- |
@@ -46,7 +46,7 @@ A pull request to a repo you do not own runs `review` at Standard or above, even
 | M | Standard | Strict |
 | L | Strict | Strict |
 
-Each lane step names a skill. The rigor decides how that skill runs.
+Each lane step names a skill. The rigor decides how it runs.
 
 | Dial | Light | Standard | Strict |
 | --- | --- | --- | --- |
@@ -57,48 +57,44 @@ Each lane step names a skill. The rigor decides how that skill runs.
 | Review | Read your own diff. | `review` on the Standards and Spec axes. | `review` on all axes, plus the adversarial panel. |
 | Trail | None. | None. | `trail` records each decision. |
 
-Your first output after reading this skill is the call, as one line, before any edit:
+Your first output after reading this skill is the call, as one line, before any edit. Name the design door (`design door: new orders table`) and each action door (`action door: deletes a test note during prove`) when there is one.
 
 ```
 lane: Feature · rigor: Standard (M, two-way) · design door: no · action door: none · why: adds a field every caller of createOrder reads
 ```
 
-Name the design door when there is one (`design door: new orders table`) and each action door (`action door: deletes a test note during prove`).
-
-Re-classify when the evidence changes. A bug whose fix crosses three modules is now M. A refactor that turns out to change behavior is now a Feature. Print the new line and say what changed.
+Re-classify when the evidence changes: a bug fix that crosses three modules is now M, a refactor that changes behavior is now a Feature. Print the new line and say what changed.
 
 ### Joining a task already in progress
 
-When plumb starts after work has begun, earlier choices are not settled just because they were made. Before the lane's first step, list every choice made so far and sort each one:
+Earlier choices are not settled just because they were made. Before the lane's first step, list every choice so far and sort each one:
 
-- **A fact or an empirical result** already checked. Keep it, and cite the evidence.
-- **A decision the user made outside plumb.** Ask it again through `align`, with the earlier answer as the recommended option, so the user confirms it with plumb's later questions in view. When the user wrote it down, in the request, a spec, or notes in the repo, list it as settled with its source in align's goal paragraph instead, so the last round's "Build this?" confirms it.
-- **A decision you made on your own**, such as a default, a scope cut, or a design choice. Ask it as well. It never had the user's yes.
-- **Code already written.** Treat it as a draft that the Design and Review steps may change.
+- **A fact or empirical result** already checked: keep it and cite the evidence.
+- **A decision the user made outside plumb:** ask it again through `align`, with the earlier answer recommended, so the user confirms it with plumb's later questions in view. If the user wrote it down (request, spec, repo notes), list it as settled with its source in align's goal paragraph instead, so the last round's "Build this?" confirms it.
+- **A decision you made on your own** (a default, a scope cut, a design choice): ask it too.
+- **Code already written:** a draft that Design and Review may change.
 
-Show the user the sorted list, then ask the decisions in one `align` round. Mark a lane step `done-before-plumb: <evidence>` only after the user confirms its decisions.
+Show the sorted list, then ask the decisions in one `align` round. Mark a step `done-before-plumb: <evidence>` only after the user confirms its decisions.
 
 ## 3. Open the todolist
 
-Copy the lane's steps into the todolist verbatim before any task-specific item. A step you skip stays with `skip: <reason>`. A step you run in a lighter or different form than the lane and rigor say carries `adjusted: <what changed>, <why>`, for example `adjusted: deliver stopped at a local commit, the user asked for no PR` or `adjusted: the parent ran the full suite, not the builder`.
+Copy the lane's steps into the todolist verbatim, before any task-specific item. A skipped step stays with `skip: <reason>`. A step run in a lighter or different form carries `adjusted: <what changed>, <why>`, such as `adjusted: deliver stopped at a local commit, the user asked for no PR`.
 
-Use the session's task tool. If none exists, write a `todo.md` checklist outside the repo, in the session's scratch or work directory, so it never lands in a commit. Give its full path in your reply so the user can open it. When a lane step finishes, say so in one line: the step, and what is next. Show the lane steps as a checklist only in the final reply, because the reply check reads any such checklist as the walked list.
+Use the session's task tool, or else a `todo.md` checklist outside the repo in the scratch or work directory, and give its full path in your reply. When a step finishes, say so in one line: the step and what is next. Show the lane steps as a checklist only in the final reply, because the reply check reads any such checklist as the walked list.
 
 ### Subagents
 
-Some steps hand work to subagents: `plumb:plumb-builder` writes the code at Standard and Strict, and `plumb:plumb-reviewer` runs each review axis. The point is separation: the agent that wrote the code does not judge it. Every subagent starts with a fresh context window, never a fork of the parent session, because a fork carries the parent's reasoning and breaks the separation between writer and judge.
+`plumb:plumb-builder` writes the code at Standard and Strict, and `plumb:plumb-reviewer` runs each review axis, so the writer never judges its own code. Every subagent starts with a fresh context, never a fork of the parent session.
 
-A builder commits each green slice as a checkpoint whose body holds `Green:` and `Next:`. When a builder stops without a report (quota, crash, timeout), run `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/worktree-check.mjs" <worktree>` on its worktree and read `git log <base>..<branch>` for its last checkpoint commit. Uncommitted drafts in the worktree are not evidence. Rerun the checkpoint's `Green:` command, then resume the same builder or brief a fresh one from that commit with its `Next:` step.
+A builder commits each green slice with `Green:` and `Next:` in the body. When a builder stops without a report, run `node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/worktree-check.mjs" <worktree>` and read `git log <base>..<branch>` for its last checkpoint. Uncommitted drafts are not evidence. Rerun the checkpoint's `Green:` command, then resume that builder or brief a fresh one from the commit with its `Next:` step.
 
-When the user asks for plumb, that request covers the subagents its steps name. Do not ask again. If the environment or the user forbids subagents, do the step in the main session and keep the separation another way: write the code yourself, then run each review axis in a fresh context that sees only the diff, its sources, and the rules in `${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/agents/plumb-reviewer.md`, such as a new session. Say in the final reply which steps ran without a subagent and why.
+A request for plumb covers the subagents its steps name, so do not ask again. If the environment or the user forbids subagents, write the code yourself and run each review axis in a fresh context, such as a new session, that sees only the diff, its sources, and `${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/agents/plumb-reviewer.md`. Name those steps and why in the final reply.
 
 ## 4. Decide who answers each question
 
-Before you ask the user anything, sort the question.
-
-- **A fact** about the code, the environment, or history. Look it up. Send a subagent for a wide search. Never ask the user.
-- **An empirical question.** Does it work, how fast is it, what does it look like, which approach behaves better. Run it, or run the Prototype lane. Never ask the user.
-- **A decision the user owns.** Product behavior, scope, naming in the domain, risk appetite, taste. Ask through `align`, with your recommended answer.
+- **A fact** about the code, the environment, or history: look it up, with a subagent for a wide search. Never ask the user.
+- **An empirical question** (does it work, how fast, how it looks, which approach behaves better): run it, or run the Prototype lane. Never ask the user.
+- **A decision the user owns** (product behavior, scope, domain naming, risk appetite, taste): ask through `align`, with your recommended answer.
 
 If the user is away or said to run unattended, take your recommended answer, record it with `trail`, and keep going.
 
@@ -106,13 +102,13 @@ Always stop and ask before an irreversible action: a force-push to a shared bran
 
 ## 5. Finish
 
-A task is done when `prove` has evidence from the real artifact and `review` has no open finding at the rigor's level. "It compiles" and "the tests pass" are not proof on their own. At Standard and Strict, `review` is not optional, however small the diff looks. A fix made after a review is verified as the `review` skill's Verify fixes section says.
+Done means `prove` has evidence from the real artifact and `review` has no open finding at the rigor's level. "It compiles" and "the tests pass" are not proof. At Standard and Strict, `review` always runs, however small the diff. Verify a post-review fix as the `review` skill's Verify fixes section says.
 
-Before the final reply, walk the todolist. Every lane step is done, or carries `adjusted: <what changed>, <why>` or `skip: <reason>`. A step skipped or adjusted without a reason is not done, so go back and do it. Paste the walked list into the final reply, so the user can check it without opening a file. Never mark an adjusted step done: a reader takes done to mean the step ran as the lane says.
+Before the final reply, walk the todolist: every lane step is done, or `adjusted:` or `skip:` with its reason. A step skipped or adjusted without a reason is not done, so go back and do it. Never mark an adjusted step done. Paste the walked list into the final reply.
 
-Open the final reply with the classification line, then give a short account: what changed for the user of the code, what you chose and why, the proof (paste the output), the evidence directory path (`.plumb/<slug>/evidence/`, written by `record.mjs` as the `prove` skill says), each adjusted or skipped step that lowers confidence in the result, and any decision still waiting on the user.
+Open the final reply with the classification line, then: what changed for the user of the code, what you chose and why, the proof (paste the output), the evidence directory (`.plumb/<slug>/evidence/`, written by `record.mjs` as `prove` says), each adjusted or skipped step that lowers confidence, and any decision still waiting on the user.
 
-Builders do not write evidence in their worktree, because removing a worktree deletes its ignored files. After merging a builder's branch, the parent records its proof in the main checkout: rerun the proof command through `record.mjs`, or save the builder's pasted output with `record.mjs <slug> <name> --note`, and say which one each log is.
+Builders write no evidence in their worktree, since removing it deletes ignored files. After merging a builder's branch, record its proof in the main checkout: rerun the proof through `record.mjs`, or save the builder's pasted output with `record.mjs <slug> <name> --note`, and say which each log is.
 
 ## 6. Log your own failures
 
@@ -122,44 +118,38 @@ When you fix a mistake you made, log it right then:
 node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/failure-log.mjs" add --context "..." --cause "..." --fix "..." --lane <lane> --skill <skill> --tag <kind>
 ```
 
-Log it when the user corrects you, when a check, `prove`, or `review` catches an error you introduced, or when an approach you chose is thrown away and redone. Do not log a pre-existing failure, a flaky test, or the user changing their mind.
-
-- **Context**: what you were doing and what went wrong.
-- **Cause**: why it went wrong, such as the wrong assumption or the missing information.
-- **Fix**: what you changed.
-
-Write the entry in the user's language. The script fills in the time, repo, branch, commit, and session. The log is a local file outside every repo, so it needs no approval. `/plumb:retro` reads it later to turn recurring mistakes into checks.
+Log it when the user corrects you, when a check, `prove`, or `review` catches an error you introduced, or when you throw away and redo an approach you chose. Do not log a pre-existing failure, a flaky test, or the user changing their mind. Context is what you were doing and what went wrong, cause is why (a wrong assumption, missing information), fix is what you changed. Write it in the user's language. The script fills in the time, repo, branch, commit, and session. The log is local, outside every repo, so it needs no approval. `/plumb:retro` reads it later.
 
 ## Skills
 
 Model-invoked. The lanes call these.
 
-- `align`: interview the user on decisions, one frontier of questions per round.
-- `domain`: keep the glossary and ADRs current as terms and hard decisions settle.
+- `align`: interview the user on decisions, one frontier per round.
+- `domain`: keep the glossary and ADRs current.
 - `design`: shape the module (data shape, interface, seam) before code.
-- `improve-codebase-architecture`: scan the hot spots for deepening opportunities, report them as HTML, then align on one for the Refactor lane.
-- `wayfind`: chart a foggy destination as a map of decision tickets and resolve them one at a time.
-- `research`: read primary sources outside the repo in a background subagent and save the cited findings.
+- `improve-codebase-architecture`: find deepening opportunities, report them as HTML, align on one for the Refactor lane.
+- `wayfind`: chart a foggy destination as decision tickets and resolve them one at a time.
+- `research`: read primary sources outside the repo in a background subagent and save cited findings.
 - `spec`: write the agreed design as a spec on the tracker.
 - `tickets`: split a spec into tracer-bullet tickets with blocking edges.
-- `implement`: build one ticket or one feature, test-first, then prove and review.
-- `orchestrate`: build a whole ticket graph with parallel builders on one integration branch.
+- `implement`: build one ticket or feature test-first, then prove and review.
+- `orchestrate`: build a ticket graph with parallel builders on one integration branch.
 - `tdd`: the red-green loop at agreed seams.
-- `diagnose`: a feedback loop that goes red on the bug, then hypotheses, then the fix.
+- `diagnose`: a loop that goes red on the bug, then hypotheses, then the fix.
 - `prove`: show the change works on the real surface.
 - `review`: review a diff on separate axes in separate subagents.
 - `deliver`: shape the commits and the PR body.
 - `trail`: a decision log for long or unattended work.
-- `help`: tell the user which lane, skill, or command fits, and how to steer a run. No lane calls it; it runs when the user asks how to use plumb or types `/plumb:help`.
+- `help`: which lane, skill, or command fits, and how to steer a run. No lane calls it; it runs when the user asks how to use plumb or types `/plumb:help`.
 
-Also model-invoked. No lane calls these six. They run when the user asks for them or the request matches their description.
+Also model-invoked. No lane calls these six; they run when the user asks or the request matches.
 
-- `arena`: run parallel candidates at the same task, pick a base, and graft the strongest parts of the rest.
-- `interrogate`: adversaries try to break a change or design, and only findings proven by a run survive.
-- `swarm`: fan out parallel workers, drain them, and return one report.
-- `thermos`: run both thermo-nuclear reviews in parallel and synthesize their findings.
-- `thermo-nuclear-review`: a security and correctness audit of a branch diff.
-- `thermo-nuclear-code-quality-review`: a strict maintainability audit of abstractions, giant files, and spaghetti growth.
+- `arena`: parallel candidates at one task, pick a base, graft the best of the rest.
+- `interrogate`: adversaries try to break a change or design; only findings proven by a run survive.
+- `swarm`: fan out parallel workers and return one report.
+- `thermos`: both thermo-nuclear reviews in parallel, synthesized.
+- `thermo-nuclear-review`: security and correctness audit of a branch diff.
+- `thermo-nuclear-code-quality-review`: strict maintainability audit of abstractions, giant files, and spaghetti growth.
 
 User-invoked. Only the user types these.
 
@@ -167,4 +157,4 @@ User-invoked. Only the user types these.
 - `/plumb:retro`: turn the session's mistakes into checks and standards.
 - `/plumb:handoff`: write a handoff file for another session or person.
 - `/plumb:sharpen`: make a task deeper, not bigger, and rewrite its prompt.
-- `/plumb:ketchup`: catch the user up since their last message and list what waits on them.
+- `/plumb:ketchup`: catch the user up and list what waits on them.
