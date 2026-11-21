@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { commands } from '../../hooks/shell-commands.mjs';
@@ -198,6 +198,24 @@ test('a builder worktree nested in the project is not the session\'s uncommitted
   const blocked = JSON.parse(p.stop());
   assert.match(blocked.reason, /main\.c/);
   assert.doesNotMatch(blocked.reason, /worktrees/);
+  rmSync(p.dir, { recursive: true });
+});
+
+test('the configured SessionStart command runs from a copy that lost the execute bit', () => {
+  const p = project();
+  const copy = mkdtempSync(join(tmpdir(), 'plumb-copy-'));
+  for (const sub of ['hooks', 'scripts']) cpSync(join(root, sub), join(copy, sub), { recursive: true });
+  chmodSync(join(copy, 'hooks', 'session-start.sh'), 0o644);
+  const config = JSON.parse(readFileSync(join(root, 'hooks', 'hooks.json'), 'utf8'));
+  const command = config.hooks.SessionStart[0].hooks[0].command;
+  const out = execFileSync('sh', ['-c', command], {
+    cwd: p.dir,
+    input: JSON.stringify({ session_id: 'x1', source: 'startup' }),
+    encoding: 'utf8',
+    env: { ...process.env, CLAUDE_PROJECT_DIR: p.dir, CLAUDE_PLUGIN_ROOT: copy, PLUMB_HOOK: 'on' },
+  });
+  assert.match(out, /plumb plugin/);
+  rmSync(copy, { recursive: true });
   rmSync(p.dir, { recursive: true });
 });
 
