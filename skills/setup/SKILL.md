@@ -15,7 +15,7 @@ Read what exists. Do not assume.
 - `git remote -v`: GitHub, GitLab, or none.
 - `CLAUDE.md`, `AGENTS.md`, and any existing `## Agent skills` block.
 - The glossary under any name: `GLOSSARY.md`, `GLOSSARY-MAP.md`, `CONTEXT.md`, `docs/glossary*`. Also `docs/adr/`, and monorepo signals such as workspaces or `packages/*`.
-- An existing wiki: `docs/wiki/`, `wiki/`, or a folder that `CLAUDE.md` or `AGENTS.md` names and that holds an `index.md` of interlinked pages.
+- An existing wiki, found as the Location section of the `wiki` skill says.
 - The check commands: `package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, the CI workflow. Find typecheck, lint, the single-file test, and the full suite. The full suite is what CI runs. Run each once to confirm it works.
 - How the app runs: the dev server command, the port, the CLI entry point, an existing project verify skill.
 

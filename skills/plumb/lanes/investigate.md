@@ -1,6 +1,6 @@
 # Investigate lane
 
-Read-only for code: the wiki is the one write. The output is a cited answer or a recommendation, not a change.
+Never edits code. It writes only wiki pages and `research` notes. The output is a cited answer or a recommendation, not a change.
 
 1. **Find the primary sources.** First read the wiki index and the pages it points to through `wiki` (Query), as leads to check at HEAD. Then code, tests, git history, ADRs, the issue tracker, docs. Send subagents for wide sweeps and keep only their conclusions and file pointers in the main context. When the primary source lives outside the repo, such as official docs or a third-party API, run `research`.
 2. **Answer.** For "how does X work": the key terms, the runtime flow, where things live, and the traps. For "why is it like this": the decision, its evidence, and the tradeoff. For "should we do X or Y": a table of the options and your recommendation.

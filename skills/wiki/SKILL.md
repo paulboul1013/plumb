@@ -9,11 +9,11 @@ description: Read and write the repo's wiki of dated, commit-cited pages, so the
 
 Look for an existing wiki first, in this order:
 
-1. The path after `Wiki:` in `docs/agents/plumb.md`.
+1. The path after `Wiki:` in `docs/agents/plumb.md`, unless it says none.
 2. `docs/wiki/`, then `wiki/`.
 3. A folder that `AGENTS.md` or `CLAUDE.md` names and that holds an `index.md` of interlinked pages.
 
-Use the one you find, and follow its conventions where they differ from this skill. If there is none, use `docs/wiki/`, committed so the team sees it. Create it only when you write the first page: no empty scaffold and no up-front map of the whole repo. When you create it and `docs/agents/plumb.md` exists, record `Wiki: docs/wiki/` under its `## Domain docs`.
+Use the one you find, and follow its conventions where they differ from this skill. If there is none, use `docs/wiki/`, committed so the team sees it. Create it only when you write the first page: no empty scaffold and no up-front map of the whole repo. When `docs/agents/plumb.md` exists and has no `Wiki:` path yet, set `Wiki: <path>` for the wiki you found or created under its `## Domain docs`, replacing a `Wiki: none` line rather than adding a second one.
 
 ## Layout
 
@@ -66,4 +66,4 @@ After every write, run:
 node "${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/check-wiki.mjs" <wiki-dir>
 ```
 
-Fix each line it prints until it prints `ok`. It checks that every page is in the index, every index entry matches the format and points at a page, every relative link resolves, and every present-tense line carries a date or commit. Then read the pages you touched for what no script sees: two claims that contradict each other, and a claim that a newer source overtook without being superseded.
+Fix each line it prints until it prints `ok`. It checks that every page is in the index, every index entry matches the format and points at a page, every relative link resolves, and every line with "currently", "now", or "at present" carries a date or commit. Then read the pages you touched for what no script sees: an undated "is" about code, two claims that contradict each other, and a claim that a newer source overtook without being superseded.
